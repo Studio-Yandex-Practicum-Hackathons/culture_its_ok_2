@@ -15,5 +15,5 @@ https://github.com/Arseny13
 
 - Python 3.11
 - Django 4.1
-- Aiogram 2.25.1
+- Aiogram 3.0.0rc1
 Cписок будет пополняться.
