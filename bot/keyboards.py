@@ -3,6 +3,12 @@
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
+KEYBOARD_YES_NO = [[KeyboardButton(text="Yes"), KeyboardButton(text="No"), ]]
+REVIEW_KEYBOARD = [[
+    KeyboardButton(text="Отлично! Идем дальше"),
+    KeyboardButton(text="No"),
+]]
+
 
 def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
     """

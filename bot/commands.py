@@ -5,14 +5,13 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
-    Message, ReplyKeyboardMarkup,
-    KeyboardButton, ReplyKeyboardRemove
+    Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
 )
 
 from functions import get_id_from_state
-from crud import get_exhibit
+from crud import feedback
 from utils import Route
-from keyboards import make_row_keyboard
+from keyboards import make_row_keyboard, KEYBOARD_YES_NO, REVIEW_KEYBOARD
 
 form_router = Router()
 
@@ -30,6 +29,16 @@ async def command_start(message: Message, state: FSMContext) -> None:
         reply_markup=make_row_keyboard(available_routes),
     )
     await state.set_state(Route.route)
+
+
+@form_router.message(Command(commands=["cancel"]))
+@form_router.message(F.text.casefold() == "отмена")
+async def cmd_cancel(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        text="Действие отменено",
+        reply_markup=ReplyKeyboardRemove()
+    )
 
 
 @form_router.message(Route.route)
@@ -67,7 +76,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         f" и экспонате {number_exhibit}",
     )
     await message.answer(
-        'Заполни отзыв на экспонат',
+        'Заполни отзыв на экспонат или что думаете?(фитч лист)',
         reply_markup=ReplyKeyboardRemove()
     )
     await state.set_state(Route.review)
@@ -81,19 +90,15 @@ async def review(message: Message, state: FSMContext) -> None:
     На данный момент это exhibit_yes и exhibit_no.
     """
     await message.answer(f'ваш отзыв - {message.text}')
+    await feedback(message.text, state)
     await message.answer(
         'Спасибо за наблюдения \n Перейти к следующему экспонату?',
         reply_markup=ReplyKeyboardMarkup(
-            keyboard=[
-                [
-                    KeyboardButton(text="Отлично! Идем дальше"),
-                    KeyboardButton(text="No"),
-                ]
-            ],
+            keyboard=REVIEW_KEYBOARD,
             resize_keyboard=True,
         ),
     )
-    # ставим состояние экспоната
+    await message.answer('Получилось ли найти объект(4.7.2?)')
     await state.set_state(Route.exhibit)
 
 
@@ -167,12 +172,7 @@ async def exhibit_first(message: Message, state: FSMContext) -> None:
         f"Вы на марштруте  {route_id}"
         f"Вы стоите в точке начала маршрута?)",
         reply_markup=ReplyKeyboardMarkup(
-            keyboard=[
-                [
-                    KeyboardButton(text="Yes"),
-                    KeyboardButton(text="No"),
-                ]
-            ],
+            keyboard=KEYBOARD_YES_NO,
             resize_keyboard=True,
         ),
     )
