@@ -81,6 +81,7 @@ async def review(message: Message, state: FSMContext) -> None:
     """
     pass
 
+
 @form_router.message(Route.quiz)
 async def quiz(message: Message, state: FSMContext) -> None:
     """Отрпавляет сообщение с просьбой пройти опрос, запускается если

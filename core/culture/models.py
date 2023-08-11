@@ -42,8 +42,9 @@ class Base(models.Model):
 class Route(PreBase):
 
     class Meta:
-        verbose_name='Маршрут'
-        verbose_name_plural='Маршруты'
+        verbose_name = 'Маршрут'
+        verbose_name_plural = 'Маршруты'
+
 
 class Exhibit(PreBase):
     route = models.ForeignKey(
@@ -53,8 +54,8 @@ class Exhibit(PreBase):
     )
 
     class Meta:
-        verbose_name='Экспонат'
-        verbose_name_plural='Экспонаты'
+        verbose_name = 'Экспонат'
+        verbose_name_plural = 'Экспонаты'
 
 
 class Comment(Base):
@@ -65,8 +66,8 @@ class Comment(Base):
     )
 
     class Meta:
-        verbose_name='Комментарий'
-        verbose_name_plural='Комментарии'
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
 
     def __str__(self):
         return f'Комментарий {self.pk}'
@@ -75,8 +76,8 @@ class Comment(Base):
 class FeedBack(Base):
 
     class Meta:
-        verbose_name='Отзыв'
-        verbose_name_plural='Отзывы'
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
 
     def __str__(self):
         return f'Отзыв {self.pk}'
