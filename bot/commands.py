@@ -4,7 +4,10 @@ import asyncio
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message,  ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (
+    Message, ReplyKeyboardMarkup,
+    KeyboardButton, ReplyKeyboardRemove
+)
 
 from functions import get_id_from_state
 from crud import get_exhibit
@@ -14,14 +17,16 @@ from keyboards import make_row_keyboard
 form_router = Router()
 
 available_routes = ['1', '2', '3']
-available_exhibit = ['11', '12', '131']
 
 
 @form_router.message(Command("start"))
 async def command_start(message: Message, state: FSMContext) -> None:
     """Команда /start. Должна приветствовать пользователя."""
     await message.answer(
-        text="Hi there! Выбери марштур",
+        text="Hi there!"
+    )
+    await message.reply(
+        text="Выбери марштур",
         reply_markup=make_row_keyboard(available_routes),
     )
     await state.set_state(Route.route)
@@ -58,18 +63,19 @@ async def exhibit_yes(message: Message, state: FSMContext) -> None:
         f"QQQQВы на марштруте  {user_data.get('route')}"
         f" и экспонате {number_exhibit}",
     )
-    await message.answer('Заполни отзыв на экспонат')
+    await message.answer(
+        'Заполни отзыв на экспонат',
+        reply_markup=ReplyKeyboardRemove()
+    )
     await state.set_state(Route.review)
-    # await review(message, state)
 
 
 @form_router.message(Route.review)
 async def review(message: Message, state: FSMContext) -> None:
-    """Отрпавляет сообщение с просьбой написать отзыв, запускается если
-    есть состояние Route.review.
+    """Запускается если есть состояние Route.review.
     Чек лист 4.5 - 4.7.2.
     В конце должен вызвать функцию, которая выводит следующий экспонат.
-    На данный момент это exhibit_yes.
+    На данный момент это exhibit_yes и exhibit_no.
     """
     await message.answer(f'ваш отзыв - {message.text}')
     await message.answer(
@@ -84,9 +90,7 @@ async def review(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         ),
     )
-    # сначала обнуляем состояние отзыва
-    await state.set_state(None)
-    # потом ставим состояние экспоната
+    # ставим состояние экспоната
     await state.set_state(Route.exhibit)
 
 
@@ -111,11 +115,18 @@ async def exhibit_no(message: Message, state: FSMContext) -> None:
     Так же должен вызывать функцию ( чек лист 4.4)
     """
     user_data = await state.get_data()
-    await message.answer(
+    await message.reply(
         f"Выюрано НЕТ .... Вы ушли с марштура {user_data['route']} ",
         reply_markup=make_row_keyboard(available_routes)
     )
-    await state.clear()
+    await message.answer(
+        text="Выбери марштур",
+        reply_markup=make_row_keyboard(available_routes),
+    )
+    await message.answer(
+        f'{user_data}'
+    )
+    await state.set_state(Route.route)
 
 
 @form_router.message(Route.exhibit)
