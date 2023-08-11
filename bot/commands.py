@@ -1,9 +1,11 @@
 """Основные команды бота. Кнопки старт и маршруты"""
-from aiogram import F, Router
+from aiogram import Bot, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message,  ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from speech_recognition.exceptions import UnknownValueError
 
+from functions import speech_to_text_conversion
 from utils import Route
 
 form_router = Router()
@@ -78,13 +80,15 @@ async def exhibit_no(message: Message, state: FSMContext) -> None:
     await state.clear()
 
 
-@form_router.message(Route.review, F.voice)
-async def get_voice_review(message: Message, state: FSMContext):
+@form_router.message(F.voice)
+async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     '''
     Обработка голосового отзыва.
-    
+
     1. Функция запускается если Route.review is True & F.voice is True.
+        Временно перехватывает все голосовые.
     2. Получаем текст из аудио. Планирую через speech recognition.
+            Текст получен. Сейчас этот текст выводится в ответ бота.
     3. Вызываем валидатор для проверки, что сообщение соответствует критериям.
         Возможные критерии: сообщение не пустое, в сообщение минимум N слов,
                             сообщение не может состоять только из цифр,
@@ -96,7 +100,18 @@ async def get_voice_review(message: Message, state: FSMContext):
     7. Выводим кнопки дальнейших действий или предлагаем ввод текстовых
         команд. Зависит от бизнес-логики.
     '''
-    pass
+    # Пока сделал через сохранение. Надо переделать на BytesIO
+    await bot.download(
+        message.voice,
+        destination=f'/tmp/{message.voice.file_id}.ogg'
+    )
+    try:
+        text = await speech_to_text_conversion(
+            filename=message.voice.file_id, message=message
+        )
+    except UnknownValueError:
+        text = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
+    await message.answer(text=text)
 
 
 @form_router.message()

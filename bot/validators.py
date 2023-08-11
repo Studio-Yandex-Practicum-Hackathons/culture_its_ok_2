@@ -4,7 +4,7 @@ from typing import Optional
 async def feedback_validator(text: str) -> Optional[str]:
     '''
     Валидация отзыва
-    
+
     Возможные критерии: сообщение не пустое, в сообщение минимум N слов,
                             сообщение не может состоять только из цифр,
                             мат(если получится).
