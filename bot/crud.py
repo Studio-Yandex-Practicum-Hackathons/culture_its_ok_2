@@ -1,6 +1,7 @@
 """Функции связаные с бд."""
+from aiogram.fsm.context import FSMContext
 
 
-async def feedback(*args, **kwargs):
+async def feedback(text: str, state: FSMContext):
     '''Запись отзыва в БД'''
     pass
