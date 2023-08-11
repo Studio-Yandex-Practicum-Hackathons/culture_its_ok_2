@@ -78,6 +78,12 @@ async def exhibit_no(message: Message, state: FSMContext) -> None:
     await state.clear()
 
 
+@form_router.message(F.voice)
+async def voice_to_text(message: Message):
+    '''Обработка голосового сообщения.'''
+    pass
+
+
 @form_router.message()
 async def bot_echo(message: Message):
     await message.answer(message.text)
