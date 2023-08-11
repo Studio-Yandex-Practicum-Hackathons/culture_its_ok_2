@@ -1,3 +1,6 @@
+"""Файл с основным наборами кнопок у пользователя.
+Например набор кнопок yes, no у функции exhibit, должен быть тут."""
+
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
