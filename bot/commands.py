@@ -10,8 +10,6 @@ from aiogram.types import (
     ReplyKeyboardRemove,
 )
 from aiogram.enums.parse_mode import ParseMode
-from aiogram.enums.dice_emoji import DiceEmoji
-from aiogram.methods.send_dice import SendDice
 from aiogram.utils.markdown import text, italic, code
 
 
