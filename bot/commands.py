@@ -57,18 +57,10 @@ async def exhibit_yes(message: Message, state: FSMContext) -> None:
     await message.answer(
         f"QQQQВы на марштруте  {user_data.get('route')}"
         f" и экспонате {number_exhibit}",
-        reply_markup=ReplyKeyboardMarkup(
-            keyboard=[
-                [
-                    KeyboardButton(text="Yes"),
-                    KeyboardButton(text="No"),
-                ]
-            ],
-            resize_keyboard=True,
-        ),
     )
+    await message.answer('Заполни отзыв на экспонат')
     await state.set_state(Route.review)
-    await review(message, state)
+    # await review(message, state)
 
 
 @form_router.message(Route.review)
@@ -79,7 +71,23 @@ async def review(message: Message, state: FSMContext) -> None:
     В конце должен вызвать функцию, которая выводит следующий экспонат.
     На данный момент это exhibit_yes.
     """
-    pass
+    await message.answer(f'ваш отзыв - {message.text}')
+    await message.answer(
+        'Cпасибо за отзыв \n Перейти к следующему экспонату?',
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard=[
+                [
+                    KeyboardButton(text="Yes"),
+                    KeyboardButton(text="No"),
+                ]
+            ],
+            resize_keyboard=True,
+        ),
+    )
+    # сначала обнуляем состояние отзыва
+    await state.set_state(None)
+    # потом ставим состояние экспоната
+    await state.set_state(Route.exhibit)
 
 
 @form_router.message(Route.quiz)
