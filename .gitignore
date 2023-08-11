@@ -133,7 +133,9 @@ dmypy.json
 *.db
 
 
+
 .vscode/
 
 # media
 media/
+

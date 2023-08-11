@@ -1,0 +1,2 @@
+class Exhibit():
+    pass
