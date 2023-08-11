@@ -1,12 +1,19 @@
 """Основные команды бота. Кнопки старт и маршруты"""
 import asyncio
+import emoji
 
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
-    Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
+    Message, ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
 )
+from aiogram.enums.parse_mode import ParseMode
+from aiogram.enums.dice_emoji import DiceEmoji
+from aiogram.methods.send_dice import SendDice
+from aiogram.utils.markdown import text, italic, code
+
 
 from functions import get_id_from_state
 from crud import feedback
@@ -41,7 +48,7 @@ async def cmd_cancel(message: Message, state: FSMContext):
     )
 
 
-@form_router.message(Route.route)
+@form_router.message(Route.route, F.text)
 async def route(message: Message, state: FSMContext) -> None:
     """Отрпавляет сообщение с выбранным маршрутом,
     запускается если есть состояние Route.route.
@@ -82,7 +89,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     await state.set_state(Route.review)
 
 
-@form_router.message(Route.review)
+@form_router.message(Route.review, F.text)
 async def review(message: Message, state: FSMContext) -> None:
     """Запускается если есть состояние Route.review.
     Чек лист 4.5 - 4.7.2.
@@ -159,7 +166,7 @@ async def get_voice_review(message: Message, state: FSMContext):
     pass
 
 
-@form_router.message(Route.exhibit)
+@form_router.message(Route.exhibit, F.text)
 async def exhibit_first(message: Message, state: FSMContext) -> None:
     """
     Отрпавляет сообщение о начале марштура, запускается если
@@ -178,10 +185,22 @@ async def exhibit_first(message: Message, state: FSMContext) -> None:
     )
 
 
-@form_router.message()
+@form_router.message(F.text)
 async def bot_echo(message: Message):
     """Ловит все сообщения от пользователя,
     если они не попадают под условиях функций выше.
     Она нам не нужна.
     """
     await message.answer(message.text)
+
+
+@form_router.message(F.content_type.ANY)
+async def unknown_message(message: Message):
+    message_text = text(
+        emoji.emojize('Я не знаю, что с этим делать :astonished:'),
+        italic('\nЯ просто напомню,'), 'что есть',
+        code('команда'), '/help',
+    )
+    await message.reply(message_text, parse_mode=ParseMode.MARKDOWN)
+    await message.answer_dice('⚽')
+    await message.answer_dice('🎰')
