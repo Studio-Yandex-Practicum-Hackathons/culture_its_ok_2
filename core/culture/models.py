@@ -4,11 +4,12 @@ from django.db import models
 class PreBase(models.Model):
     name = models.CharField(
         max_length=100,
-        verbose_name='Название'
+        verbose_name='Название',
+        unique=True,
     )
     description = models.TextField(verbose_name='Описание')
     image = models.ImageField(
-        upload_to='media/',
+        upload_to='pictures',
         verbose_name='Фото',
         )
 
@@ -46,6 +47,11 @@ class Route(PreBase):
         verbose_name_plural = 'Маршруты'
 
 
+    def __str__(self):
+        return f'Маршрут {self.pk}'
+
+
+
 class Exhibit(PreBase):
     route = models.ForeignKey(
         Route,
@@ -59,11 +65,23 @@ class Exhibit(PreBase):
         verbose_name_plural = 'Экспонаты'
 
 
+<<<<<<< HEAD
 class Review(Base):
     exhibit = models.ForeignKey(
         Exhibit,
         on_delete=models.CASCADE,
         related_name='review',
+=======
+    def __str__(self):
+        return f'Экспонат {self.pk}'
+
+
+class Comment(Base):
+    exhibit = models.ForeignKey(
+        Exhibit,
+        on_delete=models.CASCADE,
+        related_name='comments',
+>>>>>>> arseny_branch
     )
 
     class Meta:

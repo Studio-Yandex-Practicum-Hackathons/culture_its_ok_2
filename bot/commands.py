@@ -1,8 +1,11 @@
 """Основные команды бота. Кнопки старт и маршруты"""
+from aiogram import Bot, F, Router
+from speech_recognition.exceptions import UnknownValueError
+
+from functions import speech_to_text_conversion
 import asyncio
 import emoji
 
-from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
@@ -14,9 +17,12 @@ from aiogram.utils.markdown import text, italic, code
 
 
 from functions import get_id_from_state
+from config import SUCCESSFUL_MESSAGE
 from crud import feedback
+from exceptions import FeedbackError
 from utils import Route
 from keyboards import make_row_keyboard, KEYBOARD_YES_NO, REVIEW_KEYBOARD
+from validators import feedback_validator
 
 form_router = Router()
 
@@ -144,24 +150,50 @@ async def exhibit_no(message: Message, state: FSMContext) -> None:
     await state.set_state(Route.route)
 
 
-@form_router.message(Route.review, F.voice)
-async def get_voice_review(message: Message, state: FSMContext):
+@form_router.message(F.voice)
+async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     '''
     Обработка голосового отзыва.
     1. Функция запускается если Route.review is True & F.voice is True.
+        Временно перехватывает все голосовые.
     2. Получаем текст из аудио. Планирую через speech recognition.
+            Текст получен.
     3. Вызываем валидатор для проверки, что сообщение соответствует критериям.
         Возможные критерии: сообщение не пустое, в сообщение минимум N слов,
                             сообщение не может состоять только из цифр,
                             мат(если получится).
+            Валидатор готов.
     4. Если проверка не пройдена формируем ответ о проблеме с рекомендациями,
         что исправить.
+            В случае ошибки райзится исключение. Из него забираем сообщение
+            и передаем его пользователю в ответе.
     5. Вызываем функцию для сохранения отзыва в БД.
+            В функцию передаём текст и модель юзера.
     6. Формируем ответ типа Спасибо за отзыв.
+            Если не возникло ошибок передаем в ответ сообщение об успехе.
     7. Выводим кнопки дальнейших действий или предлагаем ввод текстовых
         команд. Зависит от бизнес-логики.
     '''
-    pass
+    # Пока сделал через сохранение. Надо переделать на BytesIO
+    answer = ''
+    await bot.download(
+        message.voice,
+        destination=f'/tmp/{message.voice.file_id}.ogg'
+    )
+    try:
+        text = await speech_to_text_conversion(
+            filename=message.voice.file_id, message=message
+        )
+    except UnknownValueError:
+        answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
+    try:
+        await feedback_validator(text)
+    except FeedbackError as e:
+        answer = e.message
+    if not answer:
+        await feedback(text=text, user=message.from_user)
+        answer = SUCCESSFUL_MESSAGE
+    await message.answer(text=answer)
 
 
 @form_router.message(Route.exhibit, F.text)
