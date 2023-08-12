@@ -92,7 +92,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     route_name, exhibit_id = await get_id_from_state(state)
     exhibit = await get_exhibit_by_id(route_name, exhibit_id)
     await message.answer(
-        f"QQQQВы на марштруте  {route_name}"
+        f"Вы на марштруте  {route_name}"
         f" и экспонате {exhibit_id}"
         f"и описание {exhibit.description}",
     )
