@@ -1,7 +1,7 @@
-from typing import Optional
+from exceptions import FeedbackError
 
 
-async def feedback_validator(text: str) -> Optional[str]:
+async def feedback_validator(text: str) -> None:
     '''
     Валидация отзыва
 
@@ -10,4 +10,5 @@ async def feedback_validator(text: str) -> Optional[str]:
                             мат(если получится).
     В случае ошибки возвращаем текст
     '''
-    pass
+    if not text or text.count(' ') < 2 or text.isdigit():
+        raise FeedbackError('Ошибка 1')

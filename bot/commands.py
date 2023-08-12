@@ -18,8 +18,10 @@ from aiogram.utils.markdown import text, italic, code
 
 from functions import get_id_from_state
 from crud import feedback
+from exceptions import FeedbackError
 from utils import Route
 from keyboards import make_row_keyboard, KEYBOARD_YES_NO, REVIEW_KEYBOARD
+from validators import feedback_validator
 
 form_router = Router()
 
@@ -177,6 +179,10 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
         )
     except UnknownValueError:
         text = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
+    try:
+        await feedback_validator(text)
+    except FeedbackError as e:
+        text = e.message
     await message.answer(text=text)
 
 
