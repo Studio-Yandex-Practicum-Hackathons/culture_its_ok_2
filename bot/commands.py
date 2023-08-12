@@ -6,85 +6,155 @@ from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from speech_recognition.exceptions import UnknownValueError
 
 from functions import speech_to_text_conversion
+import asyncio
+import emoji
+
+from aiogram import F, Router
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.types import (
+    Message, ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+)
+from aiogram.enums.parse_mode import ParseMode
+from aiogram.utils.markdown import text, italic, code
+
+
+from functions import get_id_from_state
+from crud import feedback
 from utils import Route
+from keyboards import make_row_keyboard, KEYBOARD_YES_NO, REVIEW_KEYBOARD
 
 form_router = Router()
 
-
-def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
-    """
-    Создаёт реплай-клавиатуру с кнопками в один ряд
-    :param items: список текстов для кнопок
-    :return: объект реплай-клавиатуры
-    """
-    row = [KeyboardButton(text=item) for item in items]
-    return ReplyKeyboardMarkup(keyboard=[row], resize_keyboard=True)
-
-
 available_routes = ['1', '2', '3']
-available_exhibit = ['11', '12', '131']
 
 
 @form_router.message(Command("start"))
 async def command_start(message: Message, state: FSMContext) -> None:
+    """Команда /start. Должна приветствовать пользователя."""
     await message.answer(
-        text="Hi there! Выбери марштур",
+        text="Hi there!"
+    )
+    await message.reply(
+        text="Выбери марштур",
         reply_markup=make_row_keyboard(available_routes),
     )
     await state.set_state(Route.route)
 
 
-@form_router.message(Route.route)
+@form_router.message(Command(commands=["cancel"]))
+@form_router.message(F.text.casefold() == "отмена")
+async def cmd_cancel(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        text="Действие отменено",
+        reply_markup=ReplyKeyboardRemove()
+    )
+
+
+@form_router.message(Route.route, F.text)
 async def route(message: Message, state: FSMContext) -> None:
+    """Отрпавляет сообщение с выбранным маршрутом,
+    запускается если есть состояние Route.route.
+    Чек лист 4.2.1
+    """
     await state.update_data(route=message.text.lower())
     user_data = await state.get_data()
     await state.set_state(Route.exhibit)
     await message.answer(
         f"Вы выбрали марщтур  {user_data['route']}",
-        reply_markup=ReplyKeyboardMarkup(
-            keyboard=[
-                [
-                    KeyboardButton(text="Yes"),
-                    KeyboardButton(text="No"),
-                ]
-            ],
-            resize_keyboard=True,
-        ),
     )
+    await asyncio.sleep(1)
+    await exhibit_first(message, state)
 
 
-@form_router.message(Route.exhibit,  F.text.casefold() == "yes")
-async def exhibit_yes(message: Message, state: FSMContext) -> None:
+@form_router.message(
+        Route.exhibit,
+        F.text.in_({"Отлично! Идем дальше", "Yes"})
+)
+async def exhibit(message: Message, state: FSMContext) -> None:
+    """
+    Отрпавляет сообщение с экспонатом, запускается если
+    есть состояние Route.exhibit и пользователь нажал
+    на кнопку да(должно быть 'Отлично! Идем дальше' ??).
+    Чек лист 4.7.1-4.7.2.
+    """
     user_data = await state.get_data()
+    number_exhibit = user_data['exhibit'] + 1
+    await state.update_data(exhibit=number_exhibit)
     await message.answer(
-        f"Вы на марштруте  {user_data['route']} и экспонате ...",
+        f"QQQQВы на марштруте  {user_data.get('route')}"
+        f" и экспонате {number_exhibit}",
+    )
+    await message.answer(
+        'Заполни отзыв на экспонат или что думаете?(фитч лист)',
+        reply_markup=ReplyKeyboardRemove()
+    )
+    await state.set_state(Route.review)
+
+
+@form_router.message(Route.review, F.text)
+async def review(message: Message, state: FSMContext) -> None:
+    """Запускается если есть состояние Route.review.
+    Чек лист 4.5 - 4.7.2.
+    В конце должен вызвать функцию, которая выводит следующий экспонат.
+    На данный момент это exhibit_yes и exhibit_no.
+    """
+    await message.answer(f'ваш отзыв - {message.text}')
+    await feedback(message.text, state)
+    await message.answer(
+        'Спасибо за наблюдения \n Перейти к следующему экспонату?',
         reply_markup=ReplyKeyboardMarkup(
-            keyboard=[
-                [
-                    KeyboardButton(text="Yes"),
-                    KeyboardButton(text="No"),
-                ]
-            ],
+            keyboard=REVIEW_KEYBOARD,
             resize_keyboard=True,
         ),
     )
-    await state.clear()
+    await message.answer('Получилось ли найти объект(4.7.2?)')
+    await state.set_state(Route.exhibit)
+
+
+@form_router.message(Route.quiz)
+async def quiz(message: Message, state: FSMContext) -> None:
+    """Отрпавляет сообщение с просьбой пройти опрос, запускается если
+    есть состояние Route.quiz.
+    Чек лист 7-8.1.1.
+    В конце должен вызвать функцию, которая выводит активные марштруты.
+    (На данный момент это кнопка start, но кнопка старт
+    должна только приветствовать пользователя в начале)
+    """
+    pass
 
 
 @form_router.message(Route.exhibit,  F.text.casefold() == "no")
 async def exhibit_no(message: Message, state: FSMContext) -> None:
+    """
+    Отрпавляет сообщение если пользователь
+    нажал на кнопку нет, при активном Route.exhibit.
+    Должен вывести карту (смотри чек лист 4.3.1 - 4.3.2)
+    Так же должен вызывать функцию ( чек лист 4.4)
+    """
     user_data = await state.get_data()
-    await message.answer(
-        f"Выюрано НЕТ .... Вы на марштруте  {user_data['route']} "
+    await message.reply(
+        f"Выбрано НЕТ .... Вы ушли с марштура {user_data['route']} "
+        "При нажатии на кнопку появляются текстовые сообщения"
+        "и ссылка на Яндекс.карты. ",
+        reply_markup=make_row_keyboard(available_routes)
     )
-    await state.clear()
+    await message.answer(
+        text="Выбери марштур",
+        reply_markup=make_row_keyboard(available_routes),
+    )
+    await message.answer(
+        f'{user_data}'
+    )
+    await state.set_state(Route.route)
 
 
 @form_router.message(F.voice)
 async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     '''
     Обработка голосового отзыва.
-
     1. Функция запускается если Route.review is True & F.voice is True.
         Временно перехватывает все голосовые.
     2. Получаем текст из аудио. Планирую через speech recognition.
@@ -114,6 +184,41 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     await message.answer(text=text)
 
 
-@form_router.message()
+@form_router.message(Route.exhibit, F.text)
+async def exhibit_first(message: Message, state: FSMContext) -> None:
+    """
+    Отрпавляет сообщение о начале марштура, запускается если
+    есть состояние Route.exhibit.
+    В чек листе 4.1.
+    """
+    await state.update_data(exhibit=0)
+    route_id, exhibit_id = await get_id_from_state(state)
+    await message.answer(
+        f"Вы на марштруте  {route_id}"
+        f"Вы стоите в точке начала маршрута?)",
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard=KEYBOARD_YES_NO,
+            resize_keyboard=True,
+        ),
+    )
+
+
+@form_router.message(F.text)
 async def bot_echo(message: Message):
+    """Ловит все сообщения от пользователя,
+    если они не попадают под условиях функций выше.
+    Она нам не нужна.
+    """
     await message.answer(message.text)
+
+
+@form_router.message(F.content_type.ANY)
+async def unknown_message(message: Message):
+    message_text = text(
+        emoji.emojize('Я не знаю, что с этим делать :astonished:'),
+        italic('\nЯ просто напомню,'), 'что есть',
+        code('команда'), '/help',
+    )
+    await message.reply(message_text, parse_mode=ParseMode.MARKDOWN)
+    await message.answer_dice('⚽')
+    await message.answer_dice('🎰')
