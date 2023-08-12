@@ -1,15 +1,11 @@
 """Основные команды бота. Кнопки старт и маршруты"""
 from aiogram import Bot, F, Router
-from aiogram.filters import Command
-from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from speech_recognition.exceptions import UnknownValueError
 
 from functions import speech_to_text_conversion
 import asyncio
 import emoji
 
-from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
