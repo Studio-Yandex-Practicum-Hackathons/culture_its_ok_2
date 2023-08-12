@@ -7,7 +7,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     Message, ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
+    ReplyKeyboardRemove, FSInputFile
 )
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.utils.markdown import text, italic, code
@@ -88,6 +88,8 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         f" и экспонате {exhibit_id}"
         f"и описание {exhibit.description}",
     )
+    image = FSInputFile(path='media/' + str(exhibit.image))
+    await message.answer_photo(image)
     await message.answer(
         'Заполни отзыв на экспонат или что думаете?(фитч лист)',
         reply_markup=ReplyKeyboardRemove()
