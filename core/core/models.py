@@ -1,2 +1,0 @@
-class Exhibit():
-    pass
