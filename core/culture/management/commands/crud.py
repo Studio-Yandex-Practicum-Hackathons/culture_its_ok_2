@@ -23,7 +23,7 @@ async def get_exhibit_by_id(route_name: int, exhibit_id: int):
 
 
 async def get_all_exhibits_by_route(route):
-    return await sync_to_async(list)(route.route.all())
+    return await sync_to_async(list)(route.exhibit.all())
 
 
 async def get_routes() -> list:

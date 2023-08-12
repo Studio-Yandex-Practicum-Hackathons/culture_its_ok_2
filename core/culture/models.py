@@ -50,19 +50,20 @@ class Exhibit(PreBase):
     route = models.ForeignKey(
         Route,
         on_delete=models.CASCADE,
-        related_name='route',
+        related_name='exhibit',
     )
+    number = models.IntegerField(blank=True, verbose_name='Номер')
 
     class Meta:
         verbose_name = 'Экспонат'
         verbose_name_plural = 'Экспонаты'
 
 
-class Comment(Base):
+class Review(Base):
     exhibit = models.ForeignKey(
         Exhibit,
         on_delete=models.CASCADE,
-        related_name='exhibit',
+        related_name='review',
     )
 
     class Meta:
