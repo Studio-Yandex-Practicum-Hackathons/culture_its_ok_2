@@ -14,7 +14,10 @@ from aiogram.utils.markdown import text, italic, code
 
 
 from .functions import get_id_from_state
-from .crud import feedback, get_exhibit
+from .crud import (
+    feedback, get_exhibit_by_id,
+    get_route_by_id, get_all_exhibits_by_route
+)
 from .utils import Route
 from .keyboards import make_row_keyboard, KEYBOARD_YES_NO, REVIEW_KEYBOARD
 
@@ -54,11 +57,14 @@ async def route(message: Message, state: FSMContext) -> None:
     """
     await state.update_data(route=message.text.lower())
     user_data = await state.get_data()
-    await state.set_state(Route.exhibit)
+    route = await get_route_by_id(user_data['route'])
+    exhibits = await get_all_exhibits_by_route(route)
     await message.answer(
-        f"Вы выбрали марщтур  {user_data['route']}",
+        f"Вы выбрали марщтур  {route.id} {route.description}"
+        f"количество экспонатов {len(exhibits)}",
     )
     await asyncio.sleep(1)
+    await state.set_state(Route.exhibit)
     await exhibit_first(message, state)
 
 
@@ -82,7 +88,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     # если нет то это конец и надо вызвать другую функцию
 
     route_id, exhibit_id = await get_id_from_state(state)
-    exhibit = await get_exhibit(route_id, exhibit_id)
+    exhibit = await get_exhibit_by_id(route_id, exhibit_id)
     await message.answer(
         f"QQQQВы на марштруте  {route_id}"
         f" и экспонате {exhibit_id}"
