@@ -3,11 +3,11 @@
 from aiogram.fsm.context import FSMContext
 
 
-async def get_id_from_state(state: FSMContext) -> tuple[int, int]:
+async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
     user_data = await state.get_data()
-    route_id = int(user_data.get('route'))
+    route_name = user_data.get('route')
     exhibit_id = int(user_data.get('exhibit'))
-    return route_id, exhibit_id
+    return route_name, exhibit_id
 
 
 async def speech_to_text_conversion(audiofile) -> str:

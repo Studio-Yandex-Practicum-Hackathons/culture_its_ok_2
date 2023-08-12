@@ -16,25 +16,27 @@ from aiogram.utils.markdown import text, italic, code
 from .functions import get_id_from_state
 from .crud import (
     feedback, get_exhibit_by_id,
-    get_route_by_id, get_all_exhibits_by_route
+    get_route_by_name, get_all_exhibits_by_route,
+    get_routes
 )
 from .utils import Route
 from .keyboards import make_row_keyboard, KEYBOARD_YES_NO, REVIEW_KEYBOARD
+from .message import (
+    GREETING_MESSAGE, CHOOSE_ROUTE
+)
 
 form_router = Router()
-
-available_routes = ['1', '2', '3']
 
 
 @form_router.message(Command("start"))
 async def command_start(message: Message, state: FSMContext) -> None:
     """Команда /start. Должна приветствовать пользователя."""
     await message.answer(
-        text="Hi there!"
+        text=GREETING_MESSAGE
     )
     await message.reply(
-        text="Выбери марштур",
-        reply_markup=make_row_keyboard(available_routes),
+        text=CHOOSE_ROUTE,
+        reply_markup=make_row_keyboard(await get_routes()),
     )
     await state.set_state(Route.route)
 
@@ -57,10 +59,10 @@ async def route(message: Message, state: FSMContext) -> None:
     """
     await state.update_data(route=message.text.lower())
     user_data = await state.get_data()
-    route = await get_route_by_id(user_data['route'])
+    route = await get_route_by_name(user_data['route'])
     exhibits = await get_all_exhibits_by_route(route)
     await message.answer(
-        f"Вы выбрали марщтур  {route.id} {route.description}"
+        f"Вы выбрали марщтур  {route.id} {route.name} {route.description}"
         f"количество экспонатов {len(exhibits)}",
     )
     await asyncio.sleep(1)
@@ -87,10 +89,10 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     # Должна быть проверка что следующий экспонат сущетсвует,
     # если нет то это конец и надо вызвать другую функцию
 
-    route_id, exhibit_id = await get_id_from_state(state)
-    exhibit = await get_exhibit_by_id(route_id, exhibit_id)
+    route_name, exhibit_id = await get_id_from_state(state)
+    exhibit = await get_exhibit_by_id(route_name, exhibit_id)
     await message.answer(
-        f"QQQQВы на марштруте  {route_id}"
+        f"QQQQВы на марштруте  {route_name}"
         f" и экспонате {exhibit_id}"
         f"и описание {exhibit.description}",
     )
@@ -148,11 +150,10 @@ async def exhibit_no(message: Message, state: FSMContext) -> None:
         f"Выбрано НЕТ .... Вы ушли с марштура {user_data['route']} "
         "При нажатии на кнопку появляются текстовые сообщения"
         "и ссылка на Яндекс.карты. ",
-        reply_markup=make_row_keyboard(available_routes)
     )
     await message.answer(
         text="Выбери марштур",
-        reply_markup=make_row_keyboard(available_routes),
+        reply_markup=make_row_keyboard(await get_routes()),
     )
     await message.answer(
         f'{user_data}'
