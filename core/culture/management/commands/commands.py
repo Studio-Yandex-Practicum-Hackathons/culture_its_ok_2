@@ -114,6 +114,17 @@ async def review(message: Message, state: FSMContext) -> None:
     """
     await message.answer(f'ваш отзыв - {message.text}')
     await feedback(message.text, state)
+    user_data = await state.get_data()
+    number_exhibit = user_data['exhibit']
+    route = await get_route_by_name(user_data['route'])
+    if number_exhibit == len(await get_all_exhibits_by_route(route)):
+        await message.answer(
+            'Это конец, пройди опрос',
+            reply_markup=ReplyKeyboardRemove()
+        )
+        await state.set_state(Route.quiz)
+        return
+
     await message.answer(
         'Спасибо за наблюдения \n Перейти к следующему экспонату?',
         reply_markup=ReplyKeyboardMarkup(
@@ -134,7 +145,12 @@ async def quiz(message: Message, state: FSMContext) -> None:
     (На данный момент это кнопка start, но кнопка старт
     должна только приветствовать пользователя в начале)
     """
-    pass
+    await message.answer('Спасибо за опрос.')
+    await message.answer(
+        text="Выбери марштур",
+        reply_markup=make_row_keyboard(await get_routes()),
+    )
+    await state.set_state(Route.route)
 
 
 @form_router.message(Route.exhibit,  F.text.casefold() == "no")

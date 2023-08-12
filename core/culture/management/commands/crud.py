@@ -18,7 +18,7 @@ async def get_route_by_name(name: str):
 async def get_exhibit_by_id(route_name: int, exhibit_id: int):
     """Получение экспоната по id. Надо немного изменить модели."""
     route = await get_route_by_name(route_name)
-    exhibit = await Exhibit.objects.aget(pk=exhibit_id, route=route,)
+    exhibit = await Exhibit.objects.aget(number=exhibit_id, route=route,)
     return exhibit
 
 
