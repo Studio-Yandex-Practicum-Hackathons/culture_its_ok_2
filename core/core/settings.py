@@ -2,9 +2,15 @@ import os
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 SECRET_KEY = 'django-insecure-47k0y&0b^!)v&#^dyg&=@_^^+gff^+rvd_brhx_2!=3%#w_mf$'
+
+
+SECRET_KEY = 'django-insecure-47k0y&0b^!)v&#^dyg&=@_^^+gff^+rvd_brhx_2!=3%#w_mf$'
+
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
