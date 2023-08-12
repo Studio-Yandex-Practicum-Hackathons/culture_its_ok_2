@@ -139,3 +139,5 @@ dmypy.json
 # media
 media/
 
+# code-workspace
+*.code-workspace

@@ -12,6 +12,8 @@ certifi==2023.7.22
 cffi==1.15.1
 charset-normalizer==3.2.0
 Django==4.1
+djangorestframework==3.14.0
+drf-extra-fields==3.7.0
 emoji==2.7.0
 flake8==6.1.0
 frozenlist==1.4.0
