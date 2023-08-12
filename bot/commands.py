@@ -17,6 +17,7 @@ from aiogram.utils.markdown import text, italic, code
 
 
 from functions import get_id_from_state
+from config import SUCCESSFUL_MESSAGE
 from crud import feedback
 from exceptions import FeedbackError
 from utils import Route
@@ -156,19 +157,25 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     1. Функция запускается если Route.review is True & F.voice is True.
         Временно перехватывает все голосовые.
     2. Получаем текст из аудио. Планирую через speech recognition.
-            Текст получен. Сейчас этот текст выводится в ответ бота.
+            Текст получен.
     3. Вызываем валидатор для проверки, что сообщение соответствует критериям.
         Возможные критерии: сообщение не пустое, в сообщение минимум N слов,
                             сообщение не может состоять только из цифр,
                             мат(если получится).
+            Валидатор готов.
     4. Если проверка не пройдена формируем ответ о проблеме с рекомендациями,
         что исправить.
+            В случае ошибки райзится исключение. Из него забираем сообщение
+            и передаем его пользователю в ответе.
     5. Вызываем функцию для сохранения отзыва в БД.
+            В функцию передаём текст и модель юзера.
     6. Формируем ответ типа Спасибо за отзыв.
+            Если не возникло ошибок передаем в ответ сообщение об успехе.
     7. Выводим кнопки дальнейших действий или предлагаем ввод текстовых
         команд. Зависит от бизнес-логики.
     '''
     # Пока сделал через сохранение. Надо переделать на BytesIO
+    answer = ''
     await bot.download(
         message.voice,
         destination=f'/tmp/{message.voice.file_id}.ogg'
@@ -178,12 +185,15 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
             filename=message.voice.file_id, message=message
         )
     except UnknownValueError:
-        text = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
+        answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
     try:
         await feedback_validator(text)
     except FeedbackError as e:
-        text = e.message
-    await message.answer(text=text)
+        answer = e.message
+    if not answer:
+        await feedback(text=text, user=message.from_user)
+        answer = SUCCESSFUL_MESSAGE
+    await message.answer(text=answer)
 
 
 @form_router.message(Route.exhibit, F.text)
