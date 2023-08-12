@@ -11,6 +11,7 @@ from aiogram.types import (
 )
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.utils.markdown import text, italic, code
+from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import UnknownValueError
 
 from .functions import get_id_from_state, speech_to_text_conversion
@@ -61,7 +62,13 @@ async def route(message: Message, state: FSMContext) -> None:
     """
     await state.update_data(route=message.text.lower())
     user_data = await state.get_data()
-    route = await get_route_by_name(user_data['route'])
+    try:
+        route = await get_route_by_name(user_data['route'])
+    except ObjectDoesNotExist:
+        await message.answer(
+            'Выбери маршрут из тех, которые представлены на клавиатуре'
+        )
+        return
     exhibits = await get_all_exhibits_by_route(route)
     await message.answer(
         f"Вы выбрали марщтур  {route.id} {route.name} {route.description}"
