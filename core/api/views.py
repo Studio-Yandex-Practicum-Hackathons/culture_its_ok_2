@@ -3,8 +3,8 @@ from culture.models import Exhibit, FeedBack, Route
 from rest_framework import viewsets
 
 from .serializers import (
-    CommentSerializer,
-    CommentReadSerializer,
+    ReviewSerializer,
+    ReviewReadSerializer,
     ExhibitSerializer,
     ExhibitReadSerializer,
     FeedBackSerializer,
@@ -12,8 +12,8 @@ from .serializers import (
 )
 
 
-class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
 
     def get_queryset(self):
         exhibit = get_object_or_404(Exhibit, pk=self.kwargs.get('exhibit_id'))
@@ -21,13 +21,15 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(
-            exhibit=get_object_or_404(Exhibit, id=self.kwargs.get('exhibit_id'))
+            exhibit=get_object_or_404(
+                Exhibit, id=self.kwargs.get('exhibit_id')
+            )
         )
+
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
-            return CommentReadSerializer
-        return CommentSerializer
-
+            return ReviewReadSerializer
+        return ReviewSerializer
 
 
 class ExhibitViewSet(viewsets.ModelViewSet):

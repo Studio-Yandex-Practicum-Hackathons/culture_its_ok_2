@@ -46,10 +46,8 @@ class Route(PreBase):
         verbose_name = 'Маршрут'
         verbose_name_plural = 'Маршруты'
 
-
     def __str__(self):
         return f'Маршрут {self.pk}'
-
 
 
 class Exhibit(PreBase):
@@ -65,23 +63,11 @@ class Exhibit(PreBase):
         verbose_name_plural = 'Экспонаты'
 
 
-<<<<<<< HEAD
 class Review(Base):
     exhibit = models.ForeignKey(
         Exhibit,
         on_delete=models.CASCADE,
         related_name='review',
-=======
-    def __str__(self):
-        return f'Экспонат {self.pk}'
-
-
-class Comment(Base):
-    exhibit = models.ForeignKey(
-        Exhibit,
-        on_delete=models.CASCADE,
-        related_name='comments',
->>>>>>> arseny_branch
     )
 
     class Meta:

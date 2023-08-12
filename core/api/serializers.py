@@ -1,23 +1,23 @@
 from rest_framework import serializers
 
-from culture.models import Comment, Exhibit, FeedBack, Route
+from culture.models import Review, Exhibit, FeedBack, Route
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Comment
+        model = Review
         fields = '__all__'
 
 
-class CommentReadSerializer(CommentSerializer):
+class ReviewReadSerializer(ReviewSerializer):
     exhibit = serializers.SlugRelatedField(
         read_only=True,
         slug_field='name'
     )
 
     class Meta:
-        model = Comment
+        model = Review
         fields = ('exhibit', 'username', 'userage', 'userhobby', 'text')
 
 
@@ -28,7 +28,7 @@ class ExhibitSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
-class ExhibitReadSerializer(CommentSerializer):
+class ExhibitReadSerializer(ReviewSerializer):
     route = serializers.SlugRelatedField(
         read_only=True,
         slug_field='name'

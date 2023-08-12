@@ -2,3 +2,5 @@
 
 GREETING_MESSAGE = 'Привет я бот КУЛЬТУРА'
 CHOOSE_ROUTE = 'Выбери марштур'
+
+SUCCESSFUL_MESSAGE: str = 'Спасибо за отзыв.'
