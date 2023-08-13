@@ -23,11 +23,11 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(
             exhibit=get_object_or_404(Exhibit, id=self.kwargs.get('exhibit_id'))
         )
+
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return CommentReadSerializer
         return CommentSerializer
-
 
 
 class ExhibitViewSet(viewsets.ModelViewSet):

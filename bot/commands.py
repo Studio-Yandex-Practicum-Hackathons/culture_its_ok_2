@@ -101,7 +101,7 @@ async def review(message: Message, state: FSMContext) -> None:
     На данный момент это exhibit_yes и exhibit_no.
     """
     await message.answer(f'ваш отзыв - {message.text}')
-    await feedback(message.text, state)
+    await feedback(message.text, message.from_user)
     await message.answer(
         'Спасибо за наблюдения \n Перейти к следующему экспонату?',
         reply_markup=ReplyKeyboardMarkup(

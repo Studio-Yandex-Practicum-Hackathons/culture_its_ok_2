@@ -46,10 +46,8 @@ class Route(PreBase):
         verbose_name = 'Маршрут'
         verbose_name_plural = 'Маршруты'
 
-
     def __str__(self):
         return f'Маршрут {self.pk}'
-
 
 
 class Exhibit(PreBase):
@@ -62,7 +60,6 @@ class Exhibit(PreBase):
     class Meta:
         verbose_name = 'Экспонат'
         verbose_name_plural = 'Экспонаты'
-
 
     def __str__(self):
         return f'Экспонат {self.pk}'
