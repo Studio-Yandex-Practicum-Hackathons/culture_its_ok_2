@@ -233,7 +233,11 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     await message.answer(text=answer)
 
 
-@form_router.message(Route.exhibit, F.text)
+# закомментил так как сама функция не должна вызываться пользователем
+# она вызывается только при выборе маршрута
+# так же можно добавить условие если пользватель воддит число, то
+# это число будет номер экспоната
+# @form_router.message(Route.exhibit, F.text)
 async def exhibit_first(message: Message, state: FSMContext) -> None:
     """
     Отрпавляет сообщение о начале марштура, запускается если
@@ -253,18 +257,18 @@ async def exhibit_first(message: Message, state: FSMContext) -> None:
 
 
 @form_router.message(F.text)
-async def bot_echo(message: Message):
+async def unknown_text(message: Message):
     """Ловит все сообщения от пользователя,
     если они не попадают под условиях функций выше.
-    Она нам не нужна.
     """
-    await message.answer(message.text)
+    await message.answer('Я тебя не понимаю, попробую использовать команды.')
 
 
 @form_router.message(F.content_type.ANY)
 async def unknown_message(message: Message):
+    await message.reply(emoji.emojize(':astonished:', language='alias'),)
     message_text = text(
-        emoji.emojize('Я не знаю, что с этим делать :astonished:'),
+        'Я не знаю, что с этим делать ',
         italic('\nЯ просто напомню,'), 'что есть',
         code('команда'), '/help',
     )
