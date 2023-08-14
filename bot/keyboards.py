@@ -3,7 +3,8 @@
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-KEYBOARD_YES_NO = [[KeyboardButton(text="Yes"), KeyboardButton(text="No"), ]]
+KEYBOARD_YES_NO = [[KeyboardButton(text="Да"), KeyboardButton(text="Нет"), ]]
+KEYBOARD_START = [[KeyboardButton(text="СТАРТ"),]]
 REVIEW_KEYBOARD = [[
     KeyboardButton(text="Отлично! Идем дальше"),
     KeyboardButton(text="No"),
@@ -18,3 +19,14 @@ def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
     """
     row = [KeyboardButton(text=item) for item in items]
     return ReplyKeyboardMarkup(keyboard=[row], resize_keyboard=True)
+
+def make_vertical_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
+    """
+    Создаёт реплай-клавиатуру с горизонтальными кнопками
+    :param items: список текстов для кнопок
+    :return: объект реплай-клавиатуры
+    """
+    vertical_keyboard=[]
+    for text in items:
+        vertical_keyboard.append([KeyboardButton(text=text)])
+    return ReplyKeyboardMarkup(keyboard=vertical_keyboard, resize_keyboard=True)

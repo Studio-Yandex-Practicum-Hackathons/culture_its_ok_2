@@ -8,11 +8,12 @@ class Route(StatesGroup):
     route = State()
     exhibit = State()
     review = State()
+    transition = State()
     quiz = State()
 
 
 class User(StatesGroup):
     """Класс состояний для пользователя."""
-    age = State()
     name = State()
+    age = State()
     hobby = State()

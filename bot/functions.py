@@ -2,6 +2,11 @@
 
 from aiogram.fsm.context import FSMContext
 
+async def add_user_information(state: FSMContext)-> None:
+    '''
+    Добавляет информацию о пользователе в пдф файл
+    '''
+    return None
 
 async def get_id_from_state(state: FSMContext) -> tuple[int, int]:
     user_data = await state.get_data()
