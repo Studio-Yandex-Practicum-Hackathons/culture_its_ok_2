@@ -1,5 +1,20 @@
+import re
+
 from .config import MINIMUM_WORDS_REVIEW
 from .exceptions import FeedbackError
+
+
+async def check_name(name: str):
+    '''Проверка имени'''
+    valid_pattern = re.compile(r"^[а-я,А-Я]+$", re.I)
+    return bool(valid_pattern.match(name))
+
+
+async def check_age(age: str):
+    '''Проверка возраста'''
+    if age.isnumeric():
+        return int(age) > 1 and int(age) < 99
+    return False
 
 
 async def feedback_validator(text: str) -> None:

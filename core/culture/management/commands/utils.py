@@ -8,6 +8,7 @@ class Route(StatesGroup):
     route = State()
     exhibit = State()
     review = State()
+    transition = State()
     quiz = State()
 
 

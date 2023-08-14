@@ -6,12 +6,19 @@ import speech_recognition as speech_r
 import soundfile as sf
 
 
+async def add_user_information(state: FSMContext) -> None:
+    '''
+    Добавляет информацию о пользователе в пдф файл
+    '''
+    return None
+
+
 async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
     """Полученние имени маршрута и номера экспоната из state."""
     user_data = await state.get_data()
     route_name = user_data.get('route')
-    exhibit_id = int(user_data.get('exhibit'))
-    return route_name, exhibit_id
+    exhibit_number = int(user_data.get('exhibit_number'))
+    return route_name, exhibit_number
 
 
 # как я понял тут пока что старая версия функции
