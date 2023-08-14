@@ -139,5 +139,9 @@ dmypy.json
 # media
 media/
 
+<<<<<<< HEAD
+*.jpg
+=======
 # code-workspace
 *.code-workspace
+>>>>>>> arseny_branch

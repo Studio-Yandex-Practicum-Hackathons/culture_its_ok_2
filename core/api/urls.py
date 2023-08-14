@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from api.views import (
-    CommentViewSet,
+    ReviewViewSet,
     ExhibitViewSet,
     FeedBackViewSet,
     RouteViewSet
@@ -14,9 +14,9 @@ router.register('feedbacks', FeedBackViewSet, basename='feedbacks')
 router.register('routes', RouteViewSet, basename='routes')
 router.register('exhibits', ExhibitViewSet, basename='exhibits')
 router.register(
-    r'exhibits/(?P<exhibit_id>\d+)/comments',
-    CommentViewSet,
-    basename='comments'
+    r'exhibits/(?P<exhibit_id>\d+)/reviews',
+    ReviewViewSet,
+    basename='reviews'
 )
 
 urlpatterns = [

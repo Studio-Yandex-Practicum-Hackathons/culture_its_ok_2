@@ -46,10 +46,8 @@ class Route(PreBase):
         verbose_name = 'Маршрут'
         verbose_name_plural = 'Маршруты'
 
-
     def __str__(self):
         return f'Маршрут {self.pk}'
-
 
 
 class Exhibit(PreBase):
@@ -58,21 +56,18 @@ class Exhibit(PreBase):
         on_delete=models.CASCADE,
         related_name='exhibit',
     )
+    number = models.IntegerField(blank=True, verbose_name='Номер')
 
     class Meta:
         verbose_name = 'Экспонат'
         verbose_name_plural = 'Экспонаты'
 
 
-    def __str__(self):
-        return f'Экспонат {self.pk}'
-
-
-class Comment(Base):
+class Review(Base):
     exhibit = models.ForeignKey(
         Exhibit,
         on_delete=models.CASCADE,
-        related_name='comments',
+        related_name='review',
     )
 
     class Meta:
