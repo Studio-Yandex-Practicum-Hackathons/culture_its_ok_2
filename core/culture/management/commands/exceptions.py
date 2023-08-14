@@ -1,5 +1,5 @@
 """Кастомные исключения"""
-
+"ывавыаыв"
 
 class FeedbackError(Exception):
     def __init__(self, message: str):
