@@ -4,10 +4,10 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 KEYBOARD_START = [[KeyboardButton(text="СТАРТ"), ]]
-KEYBOARD_YES_NO = [[KeyboardButton(text="Yes"), KeyboardButton(text="No"), ]]
+KEYBOARD_YES_NO = [[KeyboardButton(text="Да"), KeyboardButton(text="Нет"), ]]
 REVIEW_KEYBOARD = [[
     KeyboardButton(text="Отлично! Идем дальше"),
-    KeyboardButton(text="No"),
+    KeyboardButton(text="Нет"),
 ]]
 
 

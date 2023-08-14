@@ -1,4 +1,5 @@
 """Основные команды бота. Кнопки старт и маршруты"""
+import asyncio
 import emoji
 
 from aiogram import Bot, F, Router
@@ -26,9 +27,7 @@ from .utils import Route, User
 from .keyboards import (
     make_row_keyboard, KEYBOARD_YES_NO, make_vertical_keyboard
 )
-from .message import (
-    GREETING_MESSAGE, CHOOSE_ROUTE, SUCCESSFUL_MESSAGE, hello, age, hobby
-)
+from . import message as ms
 from .validators import (check_name, check_age, feedback_validator)
 from .exceptions import FeedbackError
 
@@ -42,7 +41,7 @@ main_batten = ["/СТАРТ", 'Знакомство', 'help']
 async def command_main_start(message: Message) -> None:
     """Команда /start. Должна приветствовать пользователя."""
     await message.answer(
-        hello,
+        text=ms.GREETING_MESSAGE,
         reply_markup=make_vertical_keyboard(main_batten)
     )
 
@@ -59,7 +58,7 @@ async def get_name(message: Message, state: FSMContext) -> None:
     """Получает имя пользователя"""
     if await check_name(message.text):
         await state.update_data(name=message.text)
-        await message.answer(age)
+        await message.answer(ms.AGE_MESSAGE)
         await state.set_state(User.age)
     else:
         await message.answer('Некорректное имя. Еше раз')
@@ -71,11 +70,11 @@ async def get_age(message: Message, state: FSMContext) -> None:
     """Получает возраст пользователя"""
     if await check_age(message.text):
         await state.update_data(age=message.text)
-        await message.answer(hobby)
+        await message.answer(ms.HOBBY_MESSAGE)
         await state.set_state(User.hobby)
     else:
         await message.answer('Некорректный возраст')
-        await message.answer(age)
+        await message.answer(ms.AGE_MESSAGE)
 
 
 @form_router.message(User.hobby)
@@ -87,20 +86,23 @@ async def get_hobby(message: Message, state: FSMContext) -> None:
         'Приятно познакомится',
         reply_markup=make_vertical_keyboard(main_batten)
     )
-    await state.clear()
+    await state.set_state(None)
 
 
 @form_router.message(Command("СТАРТ"))
 async def command_start(message: Message, state: FSMContext) -> None:
-    """Команда /СТАРТ. Должна приветствовать пользователя."""
-    await message.answer(
-        text=GREETING_MESSAGE
-    )
+    """Команда /СТАРТ. Предлагает выбрать маршрут."""
+    print(await state.get_data())
     await message.reply(
-        text=CHOOSE_ROUTE,
+        text=ms.CHOOSE_ROUTE_MESSAGE,
         reply_markup=make_row_keyboard(await get_routes()),
     )
     await state.set_state(Route.route)
+
+
+@form_router.message(Command("/help"))
+async def help_info(message: Message) -> None:
+    await message.answer('Тут описаны подсказки')
 
 
 @form_router.message(Command(commands=["cancel"]))
@@ -113,7 +115,7 @@ async def cmd_cancel(message: Message, state: FSMContext):
     )
 
 
-@form_router.message(Route.route,  F.text == "No")
+@form_router.message(Route.route,  F.text == "Нет")
 async def start_proute(message: Message, state: FSMContext) -> None:
     '''Поиск маршрута'''
     await message.answer('Медитация по адресу')
@@ -123,7 +125,7 @@ async def start_proute(message: Message, state: FSMContext) -> None:
         )
 
 
-@form_router.message(Route.route,  F.text == 'Yes')
+@form_router.message(Route.route,  F.text == 'Да')
 async def start_path(message: Message, state: FSMContext) -> None:
     '''Старт медитации'''
     await state.update_data(exhibit_number=1)
@@ -145,10 +147,10 @@ async def route_info(message: Message, state: FSMContext) -> None:
         await message.answer(
             'Выбери маршрут из тех, которые представлены на клавиатуре'
         )
-    return
+        return
     # await state.update_data(route=get_route_index(message.text))
     await message.answer(
-        'начало',
+        ms.START_ROUTE_MESSAGE,
         reply_markup=ReplyKeyboardMarkup(
             keyboard=KEYBOARD_YES_NO,
             resize_keyboard=True,
@@ -217,15 +219,22 @@ async def review(message: Message, state: FSMContext) -> None:
         await state.set_state(Route.transition)
 
 
+@form_router.message(Route.transition, F.text == 'Да')
+async def transition_yes(message: Message, state: FSMContext) -> None:
+    '''Переход при нажании'''
+    await state.set_state(Route.exhibit)
+
+
 @form_router.message(Route.transition)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
-    await message.answer(
-        'Следующий объект по адресу. Получилось найти',
-        reply_markup=make_row_keyboard(['Да'])
-    )
-    # Картинка экспоната
-    await state.set_state(Route.exhibit)
+    while True:
+        await message.answer(
+            'Следующий объект по адресу. Получилось найти',
+            reply_markup=make_row_keyboard(['Да'])
+        )
+        await asyncio.sleep(10)
+        # Картинка экспоната
 
 
 @form_router.message(Route.quiz)
@@ -237,11 +246,6 @@ async def end_route(message: Message, state: FSMContext) -> None:
         'Вернутся на выбор маршрута',
         reply_markup=make_row_keyboard(['/СТАРТ'])
     )
-
-
-@form_router.message(F.text == "help")
-async def help_info(message: Message) -> None:
-    await message.answer('Тут описаны подсказки')
 
 
 @form_router.message(F.voice)
@@ -286,7 +290,7 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
         answer = e.message
     if not answer:
         await feedback(text=text, user=message.from_user)
-        answer = SUCCESSFUL_MESSAGE
+        answer = ms.SUCCESSFUL_MESSAGE
     await message.answer(text=answer)
 
 
