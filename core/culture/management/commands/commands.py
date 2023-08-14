@@ -228,12 +228,12 @@ async def transition_yes(message: Message, state: FSMContext) -> None:
 @form_router.message(Route.transition)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
-    while True:
-        await message.answer(
+    
+    await message.answer(
             'Следующий объект по адресу. Получилось найти',
             reply_markup=make_row_keyboard(['Да'])
-        )
-        await asyncio.sleep(10)
+    )
+    await asyncio.sleep(10)
         # Картинка экспоната
 
 
