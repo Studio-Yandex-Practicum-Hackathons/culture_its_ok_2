@@ -7,12 +7,15 @@ import soundfile as sf
 
 
 async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
+    """Полученние имени маршрута и номера экспоната из state."""
     user_data = await state.get_data()
     route_name = user_data.get('route')
     exhibit_id = int(user_data.get('exhibit'))
     return route_name, exhibit_id
 
 
+# как я понял тут пока что старая версия функции
+# после созвона исправим версию
 async def speech_to_text_conversion(filename: str, message: Message) -> str:
     '''
     Конвертация речи в текст.
