@@ -1,9 +1,12 @@
 """Файл с основными функциями, которые нужны для чистоты кода."""
 
+from pathlib import Path
+
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
 import speech_recognition as speech_r
 import soundfile as sf
+
+from .config import BASE_DIR
 
 
 async def add_user_information(state: FSMContext) -> None:
@@ -23,7 +26,7 @@ async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
 
 # как я понял тут пока что старая версия функции
 # после созвона исправим версию
-async def speech_to_text_conversion(filename: str, message: Message) -> str:
+async def speech_to_text_conversion(filename: str) -> str:
     '''
     Конвертация речи в текст.
 
@@ -33,9 +36,19 @@ async def speech_to_text_conversion(filename: str, message: Message) -> str:
     2. Конвертация в текст
     '''
     recogniser = speech_r.Recognizer()
-    data, samplerate = sf.read(f'/tmp/{filename}.ogg')
-    sf.write(f'/tmp/{filename}.wav', data, samplerate)
-    audio_file = speech_r.AudioFile(f'/tmp/{filename}.wav')
+    data, samplerate = sf.read(f'{BASE_DIR}/tmp/voices/{filename}.ogg')
+    sf.write(f'{BASE_DIR}/tmp/voices/{filename}.wav', data, samplerate)
+    audio_file = speech_r.AudioFile(f'{BASE_DIR}/tmp/voices/{filename}.wav')
     with audio_file as source:
         audio = recogniser.record(source)
     return recogniser.recognize_google(audio, language='ru-RU')
+
+
+async def remove_tmp_files(filename: str):
+    '''
+    Удаление временных файлов
+    '''
+    path = Path(f'{BASE_DIR}/tmp/voices/{filename}.ogg')
+    path.unlink(missing_ok=True)
+    path = Path(f'{BASE_DIR}/tmp/voices/{filename}.wav')
+    path.unlink(missing_ok=True)

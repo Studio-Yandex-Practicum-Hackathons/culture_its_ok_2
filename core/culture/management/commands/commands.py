@@ -2,7 +2,7 @@
 import asyncio
 import emoji
 
-from aiogram import Bot, F, Router
+from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
@@ -14,10 +14,10 @@ from aiogram.utils.markdown import text, italic, code
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import UnknownValueError
 
-from .config import logger
+from .config import logger, BASE_DIR
 from .functions import (
     get_id_from_state, speech_to_text_conversion,
-    add_user_information,
+    add_user_information, remove_tmp_files
 )
 from .crud import (
     feedback, get_exhibit_by_id,
@@ -252,8 +252,8 @@ async def end_route(message: Message, state: FSMContext) -> None:
     )
 
 
-@form_router.message(F.voice)
-async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
+@form_router.message(Route.review, F.voice)
+async def get_voice_review(message: Message, state: FSMContext):
     '''
     Обработка голосового отзыва.
     1. Функция запускается если Route.review is True & F.voice is True.
@@ -278,14 +278,12 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     '''
     # Пока сделал через сохранение. Надо переделать на BytesIO
     answer = ''
-    await bot.download(
+    await message.bot.download(
         message.voice,
-        destination=f'/tmp/{message.voice.file_id}.ogg'
+        destination=f'{BASE_DIR}/tmp/voices/{message.voice.file_id}.ogg'
     )
     try:
-        text = await speech_to_text_conversion(
-            filename=message.voice.file_id, message=message
-        )
+        text = await speech_to_text_conversion(filename=message.voice.file_id)
     except UnknownValueError:
         answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
     try:
@@ -293,7 +291,8 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     except FeedbackError as e:
         answer = e.message
     if not answer:
-        await feedback(text=text, user=message.from_user)
+        await feedback(text=text, state=state)
+        await remove_tmp_files(filename=message.voice.file_id)
         answer = ms.SUCCESSFUL_MESSAGE
     await message.answer(text=answer)
 
