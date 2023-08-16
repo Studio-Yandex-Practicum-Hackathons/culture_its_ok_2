@@ -1,5 +1,4 @@
 """Основные команды бота. Кнопки старт и маршруты"""
-import asyncio
 import emoji
 
 from aiogram import F, Router
@@ -20,7 +19,7 @@ from .functions import (
     add_user_information, remove_tmp_files
 )
 from .crud import (
-    feedback, get_exhibit_by_id,
+    save_review, get_exhibit_by_id,
     get_route_by_name, get_all_exhibits_by_route,
     get_routes
 )
@@ -201,14 +200,8 @@ async def exhibit(message: Message, state: FSMContext) -> None:
 @form_router.message(Route.review, F.text)
 async def review(message: Message, state: FSMContext) -> None:
     '''Получения отзыва'''
-    if message.voice:
-        text = await feedback_validator(
-            speech_to_text_conversion(message.voice)
-        )
-    elif message.text:
-        # text = await feedback_validator(message.text)
-        text = message.text
-    await feedback(text, state)
+    text = message.text
+    await save_review(text, state)
     await message.answer('Спасибо за ваше наюддение')
     data = await state.get_data()
     number_exhibit = data['exhibit_number'] + 1
@@ -236,7 +229,7 @@ async def transition(message: Message, state: FSMContext) -> None:
                 'Следующий объект по адресу. Получилось найти',
                 reply_markup=make_row_keyboard(['Да'])
         )
-    await asyncio.sleep(10)
+    await state.set_state(Route.review)
     # Картинка экспоната
 
 
@@ -290,7 +283,7 @@ async def get_voice_review(message: Message, state: FSMContext):
     except FeedbackError as e:
         answer = e.message
     if not answer:
-        await feedback(text=text, state=state)
+        await save_review(text=text, state=state)
         await remove_tmp_files(filename=message.voice.file_id)
         answer = ms.SUCCESSFUL_MESSAGE
     await message.answer(text=answer)

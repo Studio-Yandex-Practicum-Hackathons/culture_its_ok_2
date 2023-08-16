@@ -20,7 +20,7 @@ async def get_exhibit_by_id(route_name: str, exhibit_number: int):
     return exhibit
 
 
-async def feedback(text: str, state: FSMContext):
+async def save_review(text: str, state: FSMContext):
     '''Запись отзыва в БД'''
     data = await state.get_data()
     exhibit = await get_exhibit_by_id(
