@@ -252,8 +252,8 @@ async def end_route(message: Message, state: FSMContext) -> None:
     )
 
 
-@form_router.message(F.voice)
-async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
+@form_router.message(Route.review, F.voice)
+async def get_voice_review(message: Message, state: FSMContext):
     '''
     Обработка голосового отзыва.
     1. Функция запускается если Route.review is True & F.voice is True.
@@ -278,7 +278,7 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     '''
     # Пока сделал через сохранение. Надо переделать на BytesIO
     answer = ''
-    await bot.download(
+    await message.bot.download(
         message.voice,
         destination=f'{BASE_DIR}/tmp/voices/{message.voice.file_id}.ogg'
     )
