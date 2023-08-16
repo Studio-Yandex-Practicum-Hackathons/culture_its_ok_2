@@ -1,7 +1,6 @@
 """Основные команды бота. Кнопки старт и маршруты"""
 import asyncio
 import emoji
-from pathlib import Path
 
 from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandStart
@@ -18,7 +17,7 @@ from speech_recognition.exceptions import UnknownValueError
 from .config import logger, BASE_DIR
 from .functions import (
     get_id_from_state, speech_to_text_conversion,
-    add_user_information,
+    add_user_information, remove_tmp_files
 )
 from .crud import (
     feedback, get_exhibit_by_id,
@@ -295,6 +294,7 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
         answer = e.message
     if not answer:
         await feedback(text=text, state=state)
+        await remove_tmp_files(filename=message.voice.file_id)
         answer = ms.SUCCESSFUL_MESSAGE
     await message.answer(text=answer)
 
