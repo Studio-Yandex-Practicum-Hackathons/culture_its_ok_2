@@ -22,7 +22,7 @@ from .functions import (
 from .crud import (
     feedback, get_exhibit_by_id,
     get_route_by_name, get_all_exhibits_by_route,
-    get_routes, get_number_routes
+    get_routes
 )
 from .utils import Route, User
 from .keyboards import (
@@ -34,7 +34,6 @@ from .exceptions import FeedbackError
 
 form_router = Router()
 
-available_routes = [f'Маршрут {i+1}'for i in range(get_number_routes())]
 main_batten = ["/СТАРТ", 'Знакомство', '/help']
 
 
@@ -138,7 +137,7 @@ async def start_proute(message: Message, state: FSMContext) -> None:
 @form_router.message(Route.route,  F.text == 'Да')
 async def start_path(message: Message, state: FSMContext) -> None:
     '''Старт медитации'''
-    await state.update_data(exhibit_number=1)
+    await state.update_data(exhibit_number=0)
     await message.answer(
         'Отлично начнем нашу медитацию',
         reply_markup=make_row_keyboard(['Отлично начинаем'])
@@ -191,7 +190,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         f"и описание {exhibit.description}",
     )
     image = FSInputFile(path='media/' + str(exhibit.image))
-    await message.answer_photo(image)
+    await message.answer_document(image)
     await message.answer(
         'Заполни отзыв на экспонат или что думаете?(фитч лист)',
         reply_markup=ReplyKeyboardRemove()
@@ -199,7 +198,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     await state.set_state(Route.review)
 
 
-@form_router.message(Route.review, F.voice | F.text)
+@form_router.message(Route.review, F.text)
 async def review(message: Message, state: FSMContext) -> None:
     '''Получения отзыва'''
     if message.voice:
@@ -215,7 +214,7 @@ async def review(message: Message, state: FSMContext) -> None:
     number_exhibit = data['exhibit_number'] + 1
     await state.update_data(exhibit_number=number_exhibit)
     route = await get_route_by_name(data['route'])
-    if data['exhibit_number'] >= len(await get_all_exhibits_by_route(route)):
+    if number_exhibit == len(await get_all_exhibits_by_route(route)):
         await message.answer(
             'Конец маршрута',
             reply_markup=make_row_keyboard(['Конец']),
@@ -230,7 +229,7 @@ async def review(message: Message, state: FSMContext) -> None:
         await state.set_state(Route.transition)
 
 
-@form_router.message(Route.transition)
+@form_router.message(Route.transition, F.voice | F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
     await message.answer(
@@ -295,6 +294,7 @@ async def get_voice_review(message: Message, state: FSMContext):
         await remove_tmp_files(filename=message.voice.file_id)
         answer = ms.SUCCESSFUL_MESSAGE
     await message.answer(text=answer)
+    await state.set_state(Route.transition)
 
 
 @form_router.message(F.text)

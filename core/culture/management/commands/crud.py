@@ -3,26 +3,7 @@
 from asgiref.sync import sync_to_async
 from aiogram.fsm.context import FSMContext
 
-from culture.models import Exhibit, Route, Review
-
-
-def get_number_routes() -> int:
-    '''Получает количество маршрутов'''
-    quantity = 3
-    return quantity
-
-
-def get_route_index(index: int) -> dict:
-    '''
-    возражает путь по индексу
-    тут возвращаю словарь для проверки а так вообще объект пути с экспонатами
-    '''
-    index = 0
-    return {'exhibits': [
-        ['Экспонат 1', 'Описание 1'],
-        ['Экспонат 2', 'Описание 2'],
-        ['Экспонат 3', 'Описание 3'],
-    ]}
+from culture.models import Route, Review
 
 
 async def get_route_by_name(name: str):
@@ -34,7 +15,8 @@ async def get_exhibit_by_id(route_name: str, exhibit_number: int):
     """Получение экспоната по id. Надо немного изменить модели.
     Надо исправить"""
     route = await get_route_by_name(route_name)
-    exhibit = await Exhibit.objects.aget(number=exhibit_number, route=route,)
+    exhibit = (await get_all_exhibits_by_route(route))[exhibit_number]
+    print(exhibit)
     return exhibit
 
 
@@ -50,7 +32,7 @@ async def feedback(text: str, state: FSMContext):
 
 async def get_all_exhibits_by_route(route):
     """Получение всех экспонатов у данного маршрута."""
-    return await sync_to_async(list)(route.exhibit.all())
+    return await sync_to_async(list)(route.exhibite.all())
 
 
 async def get_routes() -> list:
