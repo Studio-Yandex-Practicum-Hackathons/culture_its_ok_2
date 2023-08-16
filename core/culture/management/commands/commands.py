@@ -150,7 +150,7 @@ async def start_path(message: Message, state: FSMContext) -> None:
 async def route_info(message: Message, state: FSMContext) -> None:
     """Начало пути """
     try:
-        await get_route_by_name(message.text.lower())
+        route = await get_route_by_name(message.text)
     except ObjectDoesNotExist:
         logger.error('Пользователь ввел название маршрута, которого нет в бд.')
         await message.answer(
@@ -158,8 +158,8 @@ async def route_info(message: Message, state: FSMContext) -> None:
         )
         return
     # await state.update_data(route=get_route_index(message.text))
-    await message.answer('Описания маршрута')
-    await state.update_data(route=message.text.lower())
+    await message.answer(route.description)
+    await state.update_data(route=route.name)
     await message.answer(
         ms.START_ROUTE_MESSAGE,
         reply_markup=ReplyKeyboardMarkup(
