@@ -1,6 +1,7 @@
 """Основные команды бота. Кнопки старт и маршруты"""
 import asyncio
 import emoji
+from pathlib import Path
 
 from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandStart
@@ -14,7 +15,7 @@ from aiogram.utils.markdown import text, italic, code
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import UnknownValueError
 
-from .config import logger
+from .config import logger, BASE_DIR
 from .functions import (
     get_id_from_state, speech_to_text_conversion,
     add_user_information,
@@ -280,7 +281,7 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     answer = ''
     await bot.download(
         message.voice,
-        destination=f'/tmp/{message.voice.file_id}.ogg'
+        destination=f'{BASE_DIR}/tmp/voices/{message.voice.file_id}.ogg'
     )
     try:
         text = await speech_to_text_conversion(
@@ -293,7 +294,7 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     except FeedbackError as e:
         answer = e.message
     if not answer:
-        await feedback(text=text, user=message.from_user)
+        await feedback(text=text, state=state)
         answer = ms.SUCCESSFUL_MESSAGE
     await message.answer(text=answer)
 
