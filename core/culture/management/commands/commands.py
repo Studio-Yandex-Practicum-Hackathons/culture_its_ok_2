@@ -283,9 +283,7 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
         destination=f'{BASE_DIR}/tmp/voices/{message.voice.file_id}.ogg'
     )
     try:
-        text = await speech_to_text_conversion(
-            filename=message.voice.file_id, message=message
-        )
+        text = await speech_to_text_conversion(filename=message.voice.file_id)
     except UnknownValueError:
         answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
     try:

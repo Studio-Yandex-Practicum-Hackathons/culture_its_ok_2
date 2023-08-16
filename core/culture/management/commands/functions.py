@@ -3,7 +3,6 @@
 from pathlib import Path
 
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
 import speech_recognition as speech_r
 import soundfile as sf
 
@@ -27,7 +26,7 @@ async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
 
 # как я понял тут пока что старая версия функции
 # после созвона исправим версию
-async def speech_to_text_conversion(filename: str, message: Message) -> str:
+async def speech_to_text_conversion(filename: str) -> str:
     '''
     Конвертация речи в текст.
 
