@@ -36,6 +36,8 @@ from ..exceptions import FeedbackError
 
 route_router = Router()
 
+target = True
+
 
 @route_router.message(Command("routes"))
 async def command_start(message: Message, state: FSMContext) -> None:
@@ -174,7 +176,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
             f"{exhibit.message_before_review}",
         )
 
-    await asyncio.sleep(10)
+    await asyncio.sleep(3)
 
     if exhibit.message_after_review != '':
         await message.answer(
@@ -270,15 +272,23 @@ async def get_voice_review(message: Message, state: FSMContext):
 @route_router.message(Route.transition, F.voice | F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
+    global target
     exhibit = await get_exhibit_from_state(state)
-    await message.answer(
-        'Следующий объект расположен по адресу: '
-        f'{exhibit.address}\n'
-        'Получилось найти?\n'
-        f'Возможно вам поможет: {exhibit.how_to_pass}',
-        reply_markup=make_row_keyboard(['Да'])
-    )
-    await asyncio.sleep(1)
+    while True:
+        if message.text == 'Да':
+            target = False
+        if message.text != 'Да' and target:
+            await message.answer(
+                'Следующий объект расположен по адресу: '
+                f'{exhibit.address}\n'
+                'Получилось найти?\n'
+                f'Возможно вам поможет: {exhibit.how_to_pass}',
+                reply_markup=make_row_keyboard(['Да'])
+            )
+            await asyncio.sleep(3)
+            continue
+
+        break
     await state.set_state(Route.exhibit)
 
 
