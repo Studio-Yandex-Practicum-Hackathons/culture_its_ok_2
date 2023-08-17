@@ -4,12 +4,15 @@ from aiogram import Bot
 from aiogram.types import BotCommand, BotCommandScopeDefault
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-KEYBOARD_START = [[KeyboardButton(text="СТАРТ"), ]]
+MAIN_COMMANDS = ["/routes", '/Знакомство', '/help']
+
+KEYBOARD_START = [[KeyboardButton(text="routes"), ]]
 KEYBOARD_YES_NO = [[KeyboardButton(text="Да"), KeyboardButton(text="Нет"), ]]
 REVIEW_KEYBOARD = [[
     KeyboardButton(text="Отлично! Идем дальше"),
     KeyboardButton(text="Нет"),
 ]]
+
 
 async def set_command(bot: Bot):
     commands = [

@@ -24,8 +24,6 @@ async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
     return route_name, exhibit_number
 
 
-# как я понял тут пока что старая версия функции
-# после созвона исправим версию
 async def speech_to_text_conversion(filename: str) -> str:
     '''
     Конвертация речи в текст.

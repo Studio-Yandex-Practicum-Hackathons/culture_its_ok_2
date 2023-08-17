@@ -13,7 +13,6 @@ GREETING_MESSAGE = (
 INTRODUCTORY_MESSAGE = 'Давай познакомимся. Как тебя зовут'
 AGE_MESSAGE = 'Укажите свой возраст'
 HOBBY_MESSAGE = 'Может быть у вас есть хобби?'
-message = ''
 CHOOSE_ROUTE_MESSAGE = (
     'Приятно познакомится!'
     'Теперь можно приступать к выбору пути маршрута.'
