@@ -31,7 +31,7 @@ from ..keyboards import (
     make_row_keyboard, KEYBOARD_YES_NO, make_vertical_keyboard
 )
 from .. import message as ms
-from ..validators import feedback_validator
+from ..validators import rewiew_validator
 from ..exceptions import FeedbackError
 
 route_router = Router()
@@ -258,13 +258,13 @@ async def get_voice_review(message: Message, state: FSMContext):
     except UnknownValueError:
         answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
     try:
-        await feedback_validator(text)
+        await rewiew_validator(text)
     except FeedbackError as e:
         answer = e.message
     if not answer:
         await save_review(text=text, state=state)
-        await remove_tmp_files(filename=message.voice.file_id)
         answer = ms.SUCCESSFUL_MESSAGE
+    await remove_tmp_files(filename=message.voice.file_id)
     await message.answer(text=answer)
     await state.set_state(Route.transition)
 
