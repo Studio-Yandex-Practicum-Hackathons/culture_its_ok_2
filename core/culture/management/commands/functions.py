@@ -30,6 +30,12 @@ async def get_exhibit_from_state(state: FSMContext):
     return user_data.get('exhibit')
 
 
+async def get_route_from_state(state: FSMContext):
+    """Полученние маршрута из state."""
+    user_data = await state.get_data()
+    return user_data.get('route_obj')
+
+
 async def speech_to_text_conversion(filename: str) -> str:
     '''
     Конвертация речи в текст.

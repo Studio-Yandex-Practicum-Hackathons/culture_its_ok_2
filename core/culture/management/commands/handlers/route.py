@@ -17,13 +17,14 @@ from speech_recognition.exceptions import UnknownValueError
 from ..config import logger, BASE_DIR
 from ..functions import (
     get_id_from_state, speech_to_text_conversion,
-    remove_tmp_files, get_exhibit_from_state
+    remove_tmp_files, get_exhibit_from_state,
+    get_route_from_state
 )
 
 from ..crud import (
     save_review, get_exhibit,
-    get_route_by_name, get_all_exhibits_by_route,
-    get_routes_name, get_routes_id, get_route_by_id
+    get_all_exhibits_by_route,
+    get_routes_id, get_route_by_id
 )
 from ..utils import Route
 from ..keyboards import (
@@ -58,7 +59,10 @@ async def start_proute_number(message: Message, state: FSMContext) -> None:
     '''Поиск маршрута'''
     # проверка что введнный номер < len(route.exhibite.all())
     number = int(message.text) - 1
-    await message.answer(f'Вы выбрали номер обекта={message.text}')
+    await message.answer(
+        f'Вы выбрали номер обекта={message.text}'
+        f'Обьект расположен по адресу'
+    )
     await state.update_data(exhibit_number=number)
     await message.answer(
         'Готовы перейти?',
@@ -73,11 +77,10 @@ async def start_proute_number(message: Message, state: FSMContext) -> None:
 @route_router.message(Route.route,  F.text == "Нет")
 async def start_route_no(message: Message, state: FSMContext) -> None:
     '''Поиск маршрута'''
-    exhibit = await get_exhibit_from_state(state)
-    await message.answer(exhibit.address)
-    await message.answer('Медитация по адресу')
+    route = await get_route_from_state(state)
+    await message.answer(f'Медитация начинается по адресу {route.address}')
     await message.answer(
-        'вы стоите в начале',
+        'Вы стоите в начале?',
         reply_markup=make_row_keyboard(['Да']),
         )
 
@@ -99,7 +102,10 @@ async def route_info(message: Message, state: FSMContext) -> None:
     # try:
     #     await get_route_by_name(message.text.capitalize())
     # except ObjectDoesNotExist:
-    #     logger.error('Пользователь ввел название маршрута, которого нет в бд.')
+    #     logger.error(
+    #                   'Пользователь ввел название маршрута,
+    #                   которого нет в бд.'
+    #       )
     #     await message.answer(
     #         'Выбери маршрут из тех, которые представлены на клавиатуре'
     #     )
@@ -113,12 +119,19 @@ async def route_info(message: Message, state: FSMContext) -> None:
         )
         return
     await message.answer('Описания маршрута')
-    await message.answer(route.description)
+    await message.answer(
+        f"Название маршрута {route.name}\n"
+        f"Описание {route.description}\n"
+    )
+    await asyncio.sleep(1)
+    image = FSInputFile(path='media/' + str(route.image))
+    await message.answer_photo(image)
     # await state.update_data(route=message.text.capitalize())
     await state.update_data(route=route_id)
     await state.update_data(exhibit_number=0)
 
     exhibit = await get_exhibit(route_id, 0)
+    await state.update_data(route_obj=route)
     await state.update_data(exhibit=exhibit)
 
     await message.answer(
@@ -145,13 +158,29 @@ async def exhibit(message: Message, state: FSMContext) -> None:
 
     exhibit = await get_exhibit_from_state(state)
     print(exhibit)
+    if exhibit.message_before_description != '':
+        await message.answer(
+            f"{exhibit.message_before_description}",
+        )
     await message.answer(
-        f" и экспонате {exhibit}"
-        f"и описание {exhibit.description}",
+        f"{exhibit.description}",
     )
 
-    # image = FSInputFile(path='media/' + str(exhibit.image))
-    # await message.answer_document(image)
+    image = FSInputFile(path='media/' + str(exhibit.image))
+    await message.answer_document(image)
+
+    if exhibit.message_before_review != '':
+        await message.answer(
+            f"{exhibit.message_before_review}",
+        )
+
+    await asyncio.sleep(10)
+
+    if exhibit.message_after_review != '':
+        await message.answer(
+            f"{exhibit.message_after_review}",
+        )
+
     await message.answer(
         'Заполни отзыв на экспонат или что думаете?(фитч лист)',
         reply_markup=ReplyKeyboardRemove()
@@ -166,6 +195,8 @@ async def review(message: Message, state: FSMContext) -> None:
     await save_review(text, state)
     await message.answer('Спасибо за ваше наюддение')
 
+    exhibit = await get_exhibit_from_state(state)
+
     route_id, exhibit_number = await get_id_from_state(state)
     exhibit_number += 1
     await state.update_data(exhibit_number=exhibit_number)
@@ -177,6 +208,10 @@ async def review(message: Message, state: FSMContext) -> None:
         )
         await state.set_state(Route.quiz)
     else:
+        if exhibit.transfer_message != '':
+            await message.answer(
+                f"{exhibit.transfer_message}",
+            )
         await message.answer(
             'Нас ждут длительные переходы',
             reply_markup=make_row_keyboard(['Отлично идем дальше']),
@@ -237,12 +272,10 @@ async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
     exhibit = await get_exhibit_from_state(state)
     await message.answer(
-        exhibit.address
-    )
-    await message.answer(
-        'Следующий объект по адресу.'
-        f'{exhibit.address}'
-        'Получилось найти',
+        'Следующий объект расположен по адресу: '
+        f'{exhibit.address}\n'
+        'Получилось найти?\n'
+        f'Возможно вам поможет: {exhibit.how_to_pass}',
         reply_markup=make_row_keyboard(['Да'])
     )
     await asyncio.sleep(1)
