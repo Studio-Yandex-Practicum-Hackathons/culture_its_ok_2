@@ -269,6 +269,7 @@ async def get_voice_review(message: Message, state: FSMContext):
     await state.set_state(Route.transition)
 
 
+# Почему то надо нажать 2 раза да, чтобы перейти к следующему шагу
 @route_router.message(Route.transition, F.voice | F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
