@@ -61,3 +61,13 @@ async def command_main_start(message: Message) -> None:
         text=ms.GREETING_MESSAGE,
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)
     )
+
+# Надо исправить
+# @meetings_router.message(F.text.in_({'СТАРТ', 'Знакомство', 'Помощь'}))
+# async def get_acquainted(message: Message, state: FSMContext) -> None:
+#     if message.text == "СТАРТ":
+#         await command_start(message, state)
+#     elif message.text == "Знакомство":
+#         await get_acquainted(message, state)
+#     elif message.text == "Помощь":
+#         await help_info(message)
