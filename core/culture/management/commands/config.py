@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+
 ADMIN_ID = os.getenv('ADMIN_ID')
+BASE_DIR = os.getenv('BASE_DIR')
 
 
 MINIMUM_WORDS_REVIEW: int = 3

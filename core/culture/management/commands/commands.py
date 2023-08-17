@@ -1,8 +1,7 @@
 """Основные команды бота. Кнопки старт и маршруты"""
-import asyncio
 import emoji
 
-from aiogram import Bot, F, Router
+from aiogram import F, Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
@@ -14,16 +13,17 @@ from aiogram.utils.markdown import text, italic, code
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import UnknownValueError
 
-from .config import logger, ADMIN_ID
+
+from .config import logger, ADMIN_ID,  BASE_DIR
 from .functions import (
     get_id_from_state, speech_to_text_conversion,
-    add_user_information,
+    add_user_information, remove_tmp_files
 )
 
 from .crud import (
-    feedback, get_exhibit_by_id,
+    save_review, get_exhibit_by_id,
     get_route_by_name, get_all_exhibits_by_route,
-    get_routes, get_number_routes
+    get_routes
 )
 from .utils import Route, User
 from .keyboards import (
@@ -35,6 +35,7 @@ from .exceptions import FeedbackError
 
 form_router = Router()
 
+
 available_routes = [f'Маршрут {i+1}'for i in range(get_number_routes())]
 main_batten = ["СТАРТ", 'Знакомство', 'Помощь']
 
@@ -42,6 +43,7 @@ main_batten = ["СТАРТ", 'Знакомство', 'Помощь']
 async def start_bot(bot: Bot):
     await set_command(bot)
     await bot.send_message(ADMIN_ID,'Бот начал свою работу')
+
 
 @form_router.shutdown()
 async def start_bot(bot: Bot):
@@ -140,11 +142,46 @@ async def help_info(message: Message) -> None:
     await message.reply(text)
 
 
+
+@form_router.message(Command(commands=["cancel"]))
+@form_router.message(F.text.casefold() == "отмена")
+async def cmd_cancel(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        text="Действие отменено",
+        reply_markup=ReplyKeyboardRemove()
+    )
+
+
+@form_router.message(Route.route,  F.text == "Нет")
+async def start_proute(message: Message, state: FSMContext) -> None:
+    '''Поиск маршрута'''
+    await message.answer('Медитация по адресу')
+    await message.answer(
+        'вы стоите в начале',
+        reply_markup=make_row_keyboard(['да']),
+        )
+
+
+@form_router.message(Route.route,  F.text == 'Да')
+async def start_path(message: Message, state: FSMContext) -> None:
+    '''Старт медитации'''
+    await state.update_data(exhibit_number=0)
+    await message.answer(
+        'Отлично начнем нашу медитацию',
+        reply_markup=make_row_keyboard(['Отлично начинаем'])
+    )
+    await state.set_state(Route.exhibit)
+
+
+
 @form_router.message(Route.route)
 async def route_info(message: Message, state: FSMContext) -> None:
     """Начало пути """
     try:
+
         await get_route_by_name(message.text.capitalize())
+
     except ObjectDoesNotExist:
         logger.error('Пользователь ввел название маршрута, которого нет в бд.')
         await message.answer(
@@ -155,6 +192,7 @@ async def route_info(message: Message, state: FSMContext) -> None:
     await state.update_data(route=message.text.capitalize())
     await state.update_data(exhibit_number=1)
     await state.update_data(target=False)
+
     await message.answer(
         ms.START_ROUTE_MESSAGE,
         reply_markup=ReplyKeyboardMarkup(
@@ -185,7 +223,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         f"и описание {exhibit.description}",
     )
     image = FSInputFile(path='media/' + str(exhibit.image))
-    await message.answer_photo(image)
+    await message.answer_document(image)
     await message.answer(
         'Заполни отзыв на экспонат или что думаете?(фитч лист)',
         reply_markup=ReplyKeyboardRemove()
@@ -193,23 +231,17 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     await state.set_state(Route.review)
 
 
-@form_router.message(Route.review, F.voice | F.text)
+@form_router.message(Route.review, F.text)
 async def review(message: Message, state: FSMContext) -> None:
     '''Получения отзыва'''
-    if message.voice:
-        text = await feedback_validator(
-            speech_to_text_conversion(message.voice)
-        )
-    elif message.text:
-        # text = await feedback_validator(message.text)
-        text = message.text
-    await feedback(text, state)
+    text = message.text
+    await save_review(text, state)
     await message.answer('Спасибо за ваше наюддение')
     data = await state.get_data()
     number_exhibit = data['exhibit_number'] + 1
     await state.update_data(exhibit_number=number_exhibit)
     route = await get_route_by_name(data['route'])
-    if data['exhibit_number'] >= len(await get_all_exhibits_by_route(route)):
+    if number_exhibit == len(await get_all_exhibits_by_route(route)):
         await message.answer(
             'Конец маршрута',
             reply_markup=make_row_keyboard(['Конец']),
@@ -224,9 +256,10 @@ async def review(message: Message, state: FSMContext) -> None:
         await state.set_state(Route.transition)
         
 
-@form_router.message(Route.transition)
+@form_router.message(Route.transition, F.voice | F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
+
     data = await state.get_data()
     number_exhibit = data['exhibit_number']
     route = await get_route_by_name(data['route'])
@@ -264,6 +297,7 @@ async def transition(message: Message, state: FSMContext) -> None:
             )
 
 
+
 @form_router.message(Route.quiz)
 async def end_route(message: Message, state: FSMContext) -> None:
     '''Конец маршрута'''
@@ -275,8 +309,8 @@ async def end_route(message: Message, state: FSMContext) -> None:
     )
 
 
-@form_router.message(F.voice)
-async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
+@form_router.message(Route.review, F.voice)
+async def get_voice_review(message: Message, state: FSMContext):
     '''
     Обработка голосового отзыва.
     1. Функция запускается если Route.review is True & F.voice is True.
@@ -301,14 +335,12 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     '''
     # Пока сделал через сохранение. Надо переделать на BytesIO
     answer = ''
-    await bot.download(
+    await message.bot.download(
         message.voice,
-        destination=f'/tmp/{message.voice.file_id}.ogg'
+        destination=f'{BASE_DIR}/tmp/voices/{message.voice.file_id}.ogg'
     )
     try:
-        text = await speech_to_text_conversion(
-            filename=message.voice.file_id, message=message
-        )
+        text = await speech_to_text_conversion(filename=message.voice.file_id)
     except UnknownValueError:
         answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
     try:
@@ -316,9 +348,11 @@ async def get_voice_review(message: Message, state: FSMContext, bot: Bot):
     except FeedbackError as e:
         answer = e.message
     if not answer:
-        await feedback(text=text, user=message.from_user)
+        await save_review(text=text, state=state)
+        await remove_tmp_files(filename=message.voice.file_id)
         answer = ms.SUCCESSFUL_MESSAGE
     await message.answer(text=answer)
+    await state.set_state(Route.transition)
 
 
 @form_router.message(F.text)
