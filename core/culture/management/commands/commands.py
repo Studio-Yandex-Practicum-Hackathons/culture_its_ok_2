@@ -218,7 +218,6 @@ async def review(message: Message, state: FSMContext) -> None:
             'Нас ждут длительные переходы',
             reply_markup=make_row_keyboard(['Отлично идем дальше']),
         )
-
         await state.set_state(Route.transition)
 
 
@@ -229,7 +228,7 @@ async def transition(message: Message, state: FSMContext) -> None:
                 'Следующий объект по адресу. Получилось найти',
                 reply_markup=make_row_keyboard(['Да'])
         )
-    await state.set_state(Route.review)
+    await state.set_state(Route.exhibit)
     # Картинка экспоната
 
 
