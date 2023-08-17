@@ -13,11 +13,13 @@ from aiogram.utils.markdown import text, italic, code
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import UnknownValueError
 
-from .config import logger, BASE_DIR
+
+from .config import logger, ADMIN_ID,  BASE_DIR
 from .functions import (
     get_id_from_state, speech_to_text_conversion,
     add_user_information, remove_tmp_files
 )
+
 from .crud import (
     save_review, get_exhibit_by_id,
     get_route_by_name, get_all_exhibits_by_route,
@@ -25,7 +27,7 @@ from .crud import (
 )
 from .utils import Route, User
 from .keyboards import (
-    make_row_keyboard, KEYBOARD_YES_NO, make_vertical_keyboard
+    make_row_keyboard, KEYBOARD_YES_NO, make_vertical_keyboard, set_command
 )
 from . import message as ms
 from .validators import (check_name, check_age, feedback_validator)
@@ -33,8 +35,19 @@ from .exceptions import FeedbackError
 
 form_router = Router()
 
-main_batten = ["/СТАРТ", 'Знакомство', '/help']
 
+available_routes = [f'Маршрут {i+1}'for i in range(get_number_routes())]
+main_batten = ["СТАРТ", 'Знакомство', 'Помощь']
+
+@form_router.startup()
+async def start_bot(bot: Bot):
+    await set_command(bot)
+    await bot.send_message(ADMIN_ID,'Бот начал свою работу')
+
+
+@form_router.shutdown()
+async def start_bot(bot: Bot):
+    await bot.send_message(ADMIN_ID,'Бот перестал работать')
 
 @form_router.message(CommandStart())
 async def command_main_start(message: Message) -> None:
@@ -44,8 +57,25 @@ async def command_main_start(message: Message) -> None:
         reply_markup=make_vertical_keyboard(main_batten)
     )
 
+@form_router.message(Command(commands=["cancel"]))
+@form_router.message(F.text.casefold() == "отмена")
+async def cmd_cancel(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        text="Действие отменено",
+        reply_markup=ReplyKeyboardRemove()
+    )
 
-@form_router.message(F.text == "Знакомство")
+@form_router.message(F.text.in_({'СТАРТ', 'Знакомство', 'Помощь'}))
+async def get_acquainted(message: Message, state: FSMContext) -> None:
+    if message.text == "СТАРТ":
+        await command_start(message, state)
+    elif message.text == "Знакомство":
+        await get_acquainted(message, state)
+    elif message.text == "Помощь":
+        await help_info(message)
+
+@form_router.message(Command('acquaintance'))
 async def get_acquainted(message: Message, state: FSMContext) -> None:
     '''Знакомство'''
     await message.answer("Давай познакомимся.\nКак тебя зовут?")
@@ -88,10 +118,9 @@ async def get_hobby(message: Message, state: FSMContext) -> None:
     await state.set_state(None)
 
 
-@form_router.message(Command("СТАРТ"))
+@form_router.message(Command("routes"))
 async def command_start(message: Message, state: FSMContext) -> None:
     """Команда /СТАРТ. Предлагает выбрать маршрут."""
-    print(await state.get_data())
     await message.reply(
         text=ms.CHOOSE_ROUTE_MESSAGE,
         reply_markup=make_row_keyboard(await get_routes()),
@@ -103,7 +132,7 @@ async def command_start(message: Message, state: FSMContext) -> None:
 async def help_info(message: Message) -> None:
     commands = {
         '/start': 'Нажмите для приветсвеного сообщения',
-        '/СТАРТ': 'Нажмите для выбора маршрута',
+        '/routes': 'Нажмите для выбора маршрута',
         '/cancel': 'Нажмите для отмены команды',
         '/help': 'Нажмите для просмотра доступных команд'
     }
@@ -111,6 +140,7 @@ async def help_info(message: Message) -> None:
     for command in commands:
         text += f'{command}\n {commands[command]} \n'
     await message.reply(text)
+
 
 
 @form_router.message(Command(commands=["cancel"]))
@@ -144,20 +174,25 @@ async def start_path(message: Message, state: FSMContext) -> None:
     await state.set_state(Route.exhibit)
 
 
+
 @form_router.message(Route.route)
 async def route_info(message: Message, state: FSMContext) -> None:
     """Начало пути """
     try:
-        route = await get_route_by_name(message.text)
+
+        await get_route_by_name(message.text.capitalize())
+
     except ObjectDoesNotExist:
         logger.error('Пользователь ввел название маршрута, которого нет в бд.')
         await message.answer(
             'Выбери маршрут из тех, которые представлены на клавиатуре'
         )
         return
-    # await state.update_data(route=get_route_index(message.text))
-    await message.answer(route.description)
-    await state.update_data(route=route.name)
+    await message.answer('Описания маршрута')
+    await state.update_data(route=message.text.capitalize())
+    await state.update_data(exhibit_number=1)
+    await state.update_data(target=False)
+
     await message.answer(
         ms.START_ROUTE_MESSAGE,
         reply_markup=ReplyKeyboardMarkup(
@@ -165,6 +200,7 @@ async def route_info(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         )
     )
+    await state.set_state(Route.transition)
 
 
 @form_router.message(
@@ -178,8 +214,6 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     на кнопку да(должно быть 'Отлично! Идем дальше' ??).
     Чек лист 4.7.1-4.7.2.
     """
-    # Должна быть проверка что следующий экспонат сущетсвует,
-    # если нет то это конец и надо вызвать другую функцию
 
     route_name, exhibit_number = await get_id_from_state(state)
     exhibit = await get_exhibit_by_id(route_name, exhibit_number)
@@ -219,17 +253,48 @@ async def review(message: Message, state: FSMContext) -> None:
             reply_markup=make_row_keyboard(['Отлично идем дальше']),
         )
         await state.set_state(Route.transition)
-
+        
 
 @form_router.message(Route.transition, F.voice | F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
-    await message.answer(
-                'Следующий объект по адресу. Получилось найти',
-                reply_markup=make_row_keyboard(['Да'])
-        )
-    await state.set_state(Route.exhibit)
-    # Картинка экспоната
+
+    data = await state.get_data()
+    number_exhibit = data['exhibit_number']
+    route = await get_route_by_name(data['route'])
+    if message.text == 'Да' or message.text == 'Отлично идем дальше':
+        if number_exhibit == 1:
+            await message.answer(
+            'Отлично начнем нашу медитацию',
+            )
+            await state.set_state(Route.exhibit)
+            await exhibit(message, state)
+        else:
+            # # Картинка экспоната
+            await message.answer(
+                        'Следующий объект по адресу. Получилось найти',
+                        reply_markup=make_row_keyboard(['Да'])
+                )
+            await asyncio.sleep(1)
+            await state.set_state(Route.exhibit)
+    elif message.text == 'Нет':
+            await message.answer(
+                    'медитация начинается по адрусу\nВы стоите в начале маршрута',
+                    reply_markup=make_row_keyboard(['Да'])
+            )
+    else:
+        if int(message.text) <= len(await get_all_exhibits_by_route(route)):
+            await state.update_data(exhibit_number=int(message.text))
+            await message.answer(
+                    f'вы решили начать с экспоната {message.text}',
+                    reply_markup=make_row_keyboard(['Да'])
+            )
+        else:
+          await message.answer(
+                    'Такого экспоната нету. Введите номер экспоната или нажмите да чтобы начать с начала пути',
+                    reply_markup=make_row_keyboard(['Да'])
+            )
+
 
 
 @form_router.message(Route.quiz)
@@ -239,7 +304,7 @@ async def end_route(message: Message, state: FSMContext) -> None:
     await state.clear()
     await message.answer(
         'Вернутся на выбор маршрута',
-        reply_markup=make_row_keyboard(['/СТАРТ'])
+        reply_markup=make_row_keyboard(['СТАРТ'])
     )
 
 
