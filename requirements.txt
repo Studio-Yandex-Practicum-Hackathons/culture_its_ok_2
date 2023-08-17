@@ -32,6 +32,7 @@ pydantic_core==2.4.0
 pyflakes==3.1.0
 python-dotenv==1.0.0
 pytz==2023.3
+reportlab==4.0.4
 requests==2.31.0
 soundfile==0.12.1
 SpeechRecognition==3.10.0

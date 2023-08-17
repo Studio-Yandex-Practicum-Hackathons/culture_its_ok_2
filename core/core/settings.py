@@ -6,6 +6,8 @@ load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+FONTS_DIR = os.path.join(BASE_DIR, "fonts")
+
 SECRET_KEY = os.environ['SECRET_KEY']
 
 DEBUG = True
@@ -89,3 +91,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
