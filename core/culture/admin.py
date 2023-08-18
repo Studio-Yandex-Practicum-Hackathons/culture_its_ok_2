@@ -5,7 +5,6 @@ from .models import Exhibit, FeedBack, Review, Route, RouteExhibit
 
 class ExhibitInline(admin.TabularInline):
     model = RouteExhibit
-    min_num = 1
     extra = 1
 
 

@@ -144,3 +144,6 @@ media/
 
 # лог файлы
 *.log
+
+# dumpdata
+dump.json
