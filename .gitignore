@@ -145,6 +145,11 @@ media/
 # лог файлы
 *.log
 
+
+# dumpdata
+dump.json
+
 tmp/voices/
 *.ogg
 *.wav
+

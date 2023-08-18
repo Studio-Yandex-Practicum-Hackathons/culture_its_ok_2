@@ -1,24 +1,12 @@
+from culture.models import Exhibit, FeedBack, Review, Route
 from rest_framework import serializers
-
-from culture.models import Review, Exhibit, FeedBack, Route
 
 
 class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = '__all__'
-
-
-class ReviewReadSerializer(ReviewSerializer):
-    exhibit = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='name'
-    )
-
-    class Meta:
-        model = Review
-        fields = ('exhibit', 'username', 'userage', 'userhobby', 'text')
+        exclude = ('id',)
 
 
 class ExhibitSerializer(serializers.ModelSerializer):
@@ -28,24 +16,16 @@ class ExhibitSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
-class ExhibitReadSerializer(ReviewSerializer):
-    route = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field='name'
-    )
-
-    class Meta:
-        model = Exhibit
-        fields = ('name', 'description', 'image', 'route')
-
-
 class FeedBackSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = FeedBack
         exclude = ('id',)
 
 
 class RouteSerializer(serializers.ModelSerializer):
+    exhibite = ExhibitSerializer(read_only=True, many=True)
+
     class Meta:
         model = Route
-        exclude = ('id',)
+        fields = ('name', 'description', 'image', 'exhibite',)

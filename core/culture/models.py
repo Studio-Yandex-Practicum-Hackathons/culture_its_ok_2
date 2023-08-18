@@ -15,6 +15,8 @@ class PreBase(models.Model):
     image = models.ImageField(
         upload_to='pictures',
         verbose_name='Фото',
+        blank=True,
+        null=True,
         )
     address = models.TextField(verbose_name='Точный адрес')
 
@@ -69,7 +71,8 @@ class Exhibit(PreBase):
     """Модель для описания объектов"""
     author = models.CharField(
         max_length=100,
-        verbose_name='Автор'
+        verbose_name='Автор',
+        default='Не указан',
     )
     how_to_pass = models.TextField(
         verbose_name='Путь до объекта',
@@ -81,15 +84,15 @@ class Exhibit(PreBase):
         )
     message_before_review = models.TextField(
         verbose_name='Сообщение перед комментарием пользователя',
-        blank=True,
+        default='Напишите, что вы думаете об этом?'
         )
     message_after_review = models.TextField(
         verbose_name='Сообщение после комментария пользователя',
-        blank=True,
+        default='Спасибо! Ваше мнение очень важно для нас!'
         )
     transfer_message = models.TextField(
         verbose_name='Сообщение для перехода к следующему объекту',
-        blank=True,
+        default='Отлично, идем дальше!'
         )
 
     class Meta:
