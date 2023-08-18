@@ -295,23 +295,14 @@ async def get_voice_review(message: Message, state: FSMContext):
 @route_router.message(Route.transition, F.voice | F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
-    global target
+
     exhibit = await get_exhibit_from_state(state)
-    while True:
-        if message.text == 'Да':
-            target = False
-        if message.text != 'Да' and target:
-            await message.answer(
+    await message.answer(
                 'Следующий объект расположен по адресу: '
                 f'{exhibit.address}\n'
                 'Получилось найти?\n'
                 f'Возможно вам поможет: {exhibit.how_to_pass}',
-                reply_markup=make_row_keyboard(['Да'])
-            )
-            await asyncio.sleep(3)
-            continue
-
-        break
+                reply_markup=make_row_keyboard(['Да']))
     await state.set_state(Route.exhibit)
 
 
