@@ -1,14 +1,44 @@
 """Файл с основным наборами кнопок у пользователя.
 Например набор кнопок yes, no у функции exhibit, должен быть тут."""
-
+from aiogram import Bot
+from aiogram.types import BotCommand, BotCommandScopeDefault
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
-KEYBOARD_START = [[KeyboardButton(text="СТАРТ"), ]]
+MAIN_COMMANDS = ["/routes", '/Знакомство', '/help']
+
+KEYBOARD_START = [[KeyboardButton(text="routes"), ]]
 KEYBOARD_YES_NO = [[KeyboardButton(text="Да"), KeyboardButton(text="Нет"), ]]
 REVIEW_KEYBOARD = [[
     KeyboardButton(text="Отлично! Идем дальше"),
     KeyboardButton(text="Нет"),
 ]]
+
+
+async def set_command(bot: Bot):
+    commands = [
+        BotCommand(
+            command='start',
+            description='Начало работы бота'
+        ),
+        BotCommand(
+            command='routes',
+            description='Выбор маршрута'
+        ),
+        BotCommand(
+            command='acquaintance',
+            description='Сбор информации о пользователе'
+        ),
+        BotCommand(
+            command='help',
+            description='справка о командах'
+        ),
+        BotCommand(
+            command='cancel',
+            description='Сбросить'
+        ),
+    ]
+
+    await bot.set_my_commands(commands, BotCommandScopeDefault(), 'ru')
 
 
 def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
