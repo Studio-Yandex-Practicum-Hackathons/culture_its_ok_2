@@ -18,6 +18,7 @@ async def main():
     dp.include_router(main_router)
     # не уверен что надо иммено тут
     logger.info("Bot включился!")
+
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
