@@ -1,3 +1,4 @@
+from PIL import Image
 from django.db import models
 
 
@@ -19,6 +20,18 @@ class PreBase(models.Model):
         null=True,
         )
     address = models.TextField(verbose_name='Точный адрес')
+
+    def save(self, *args, **kwargs):
+        super(PreBase, self).save(*args, **kwargs)
+
+        if self.image:
+            fixed_width = 1080
+            filepath = self.image.path
+            img = Image.open(filepath)
+            width_percent = (fixed_width / float(img.size[0]))
+            height_size = int((float(img.size[1]) * float(width_percent)))
+            new_image = img.resize((fixed_width, height_size))
+            new_image.save(filepath)
 
     class Meta:
         abstract = True
