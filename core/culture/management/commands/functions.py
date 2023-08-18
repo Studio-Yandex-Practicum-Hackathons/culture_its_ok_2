@@ -2,9 +2,9 @@
 
 from pathlib import Path
 
-from aiogram.fsm.context import FSMContext
-import speech_recognition as speech_r
 import soundfile as sf
+import speech_recognition as speech_r
+from aiogram.fsm.context import FSMContext
 
 from .config import BASE_DIR
 

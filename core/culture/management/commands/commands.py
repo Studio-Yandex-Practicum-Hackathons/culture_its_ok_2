@@ -1,18 +1,13 @@
 """Основные команды бота. Кнопки старт и маршруты"""
-from aiogram import F, Router, Bot
+from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandStart
-from aiogram.types import (
-    Message,
-    ReplyKeyboardRemove,
-)
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, ReplyKeyboardRemove
 
-from .config import ADMIN_ID
-from .keyboards import (
-    make_vertical_keyboard, MAIN_COMMANDS, set_command
-)
-from .handlers import meetings_router, route_router
 from . import message as ms
+from .config import ADMIN_ID
+from .handlers import meetings_router, route_router
+from .keyboards import MAIN_COMMANDS, make_vertical_keyboard, set_command
 
 main_router = Router()
 main_router.include_router(route_router)
@@ -44,7 +39,7 @@ async def help_info(message: Message) -> None:
     await message.reply(text)
 
 
-@main_router.message(Command(commands=["cancel"]))
+@main_router.message(Command("cancel"))
 @main_router.message(F.text.casefold() == "отмена")
 async def cmd_cancel(message: Message, state: FSMContext):
     await state.clear()

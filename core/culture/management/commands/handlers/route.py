@@ -1,38 +1,28 @@
 import asyncio
-import emoji
 
+import emoji
 from aiogram import F, Router
+from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (
-    Message, ReplyKeyboardMarkup,
-    ReplyKeyboardRemove, FSInputFile
-)
-from aiogram.enums.parse_mode import ParseMode
-from aiogram.utils.markdown import text, italic, code
+from aiogram.types import (FSInputFile, Message, ReplyKeyboardMarkup,
+                           ReplyKeyboardRemove)
+from aiogram.utils.markdown import code, italic, text
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import UnknownValueError
 
-
-from ..config import logger, BASE_DIR
-from ..functions import (
-    get_id_from_state, speech_to_text_conversion,
-    remove_tmp_files, get_exhibit_from_state,
-    get_route_from_state
-)
-
-from ..crud import (
-    save_review, get_exhibit,
-    get_all_exhibits_by_route,
-    get_routes_id, get_route_by_id
-)
-from ..utils import Route
-from ..keyboards import (
-    make_row_keyboard, KEYBOARD_YES_NO, make_vertical_keyboard
-)
 from .. import message as ms
-from ..validators import feedback_validator
+from ..config import BASE_DIR, logger
+from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
+                    get_routes_id, save_review)
 from ..exceptions import FeedbackError
+from ..functions import (get_exhibit_from_state, get_id_from_state,
+                         get_route_from_state, remove_tmp_files,
+                         speech_to_text_conversion)
+from ..keyboards import (KEYBOARD_YES_NO, make_row_keyboard,
+                         make_vertical_keyboard)
+from ..utils import Route
+from ..validators import feedback_validator
 
 route_router = Router()
 

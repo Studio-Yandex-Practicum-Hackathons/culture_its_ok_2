@@ -38,8 +38,8 @@ class FeedBackAdmin(admin.ModelAdmin):
     def export_as_pdf(self, request, queryset):
         pdf = generate_pdf(queryset)
         return FileResponse(
-        pdf, as_attachment=True, filename="report.pdf"
-    )
+            pdf, as_attachment=True, filename="report.pdf"
+        )
 
 
 @admin.register(Route)
