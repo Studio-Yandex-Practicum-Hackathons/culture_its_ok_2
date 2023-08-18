@@ -186,9 +186,16 @@ async def exhibit(message: Message, state: FSMContext) -> None:
 @route_router.message(Route.review, F.text)
 async def review(message: Message, state: FSMContext) -> None:
     '''Получения отзыва'''
+    answer = ''
     text = message.text
-    await save_review(text, state)
-    await message.answer('Спасибо за ваше наюддение')
+    try:
+        await rewiew_validator(text)
+    except FeedbackError as e:
+        answer = e.message
+    if not answer:
+        await save_review(text, state)
+        answer = ms.SUCCESSFUL_MESSAGE
+    await message.answer(text=answer)
 
     exhibit = await get_exhibit_from_state(state)
 
