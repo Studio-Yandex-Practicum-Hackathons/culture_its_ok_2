@@ -1,9 +1,8 @@
 """Функции связаные с бд."""
 
-from asgiref.sync import sync_to_async
 from aiogram.fsm.context import FSMContext
-
-from culture.models import Route, Review
+from asgiref.sync import sync_to_async
+from culture.models import Review, Route
 
 
 async def get_routes_name() -> list:

@@ -15,8 +15,8 @@ from .handlers import meetings_router, route_router
 from . import message as ms
 
 main_router = Router()
-main_router.include_router(route_router)
 main_router.include_router(meetings_router)
+main_router.include_router(route_router)
 
 
 @main_router.startup()
@@ -44,7 +44,7 @@ async def help_info(message: Message) -> None:
     await message.reply(text)
 
 
-@main_router.message(Command(commands=["cancel"]))
+@main_router.message(Command("cancel"))
 @main_router.message(F.text.casefold() == "отмена")
 async def cmd_cancel(message: Message, state: FSMContext):
     await state.clear()

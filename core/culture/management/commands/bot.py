@@ -1,12 +1,12 @@
 """Основной функциол бота(просто запуск)."""
 import asyncio
 
-from django.core.management.base import BaseCommand
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramServerError
+from django.core.management.base import BaseCommand
 
-from .config import TELEGRAM_TOKEN, logger
 from .commands import main_router
+from .config import TELEGRAM_TOKEN, logger
 
 
 async def main():
@@ -18,6 +18,7 @@ async def main():
     dp.include_router(main_router)
     # не уверен что надо иммено тут
     logger.info("Bot включился!")
+
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 

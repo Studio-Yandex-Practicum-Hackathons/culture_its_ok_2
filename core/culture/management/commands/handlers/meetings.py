@@ -1,20 +1,13 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (
-    Message
-)
+from aiogram.types import Message
 
-from ..functions import (
-    add_user_information
-)
-
-from ..utils import User
-from ..keyboards import (
-    make_vertical_keyboard, MAIN_COMMANDS
-)
 from .. import message as ms
-from ..validators import (check_name, check_age)
+from ..functions import add_user_information
+from ..keyboards import MAIN_COMMANDS, make_vertical_keyboard
+from ..utils import User
+from ..validators import check_age, check_name
 
 meetings_router = Router()
 

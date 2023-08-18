@@ -32,4 +32,6 @@ https://github.com/vityn101979
 - Python 3.11
 - Django 4.1
 - Aiogram 3.0.0rc1
+- reportlab 4.0.4
+
 Cписок будет пополняться.

@@ -1,9 +1,9 @@
 """Файл с основными функциями, которые нужны для чистоты кода."""
 import io
 
-from aiogram.fsm.context import FSMContext
-import speech_recognition as speech_r
 import soundfile as sf
+import speech_recognition as speech_r
+from aiogram.fsm.context import FSMContext
 
 
 async def add_user_information(state: FSMContext) -> None:

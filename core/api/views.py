@@ -1,15 +1,9 @@
-from django.shortcuts import get_object_or_404
 from culture.models import Exhibit, FeedBack, Route
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 
-from .serializers import (
-    ReviewSerializer,
-    ReviewReadSerializer,
-    ExhibitSerializer,
-    ExhibitReadSerializer,
-    FeedBackSerializer,
-    RouteSerializer
-)
+from .serializers import (ExhibitSerializer, FeedBackSerializer,
+                          ReviewSerializer, RouteSerializer)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -17,7 +11,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         exhibit = get_object_or_404(Exhibit, pk=self.kwargs.get('exhibit_id'))
-        return exhibit.comments.all()
+        return exhibit.reviews.all()
 
     def perform_create(self, serializer):
         serializer.save(
@@ -26,20 +20,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
             )
         )
 
-    def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
-            return ReviewReadSerializer
-        return ReviewSerializer
-
 
 class ExhibitViewSet(viewsets.ModelViewSet):
     queryset = Exhibit.objects.all()
     serializer_class = ExhibitSerializer
-
-    def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
-            return ExhibitReadSerializer
-        return ExhibitSerializer
 
 
 class RouteViewSet(viewsets.ModelViewSet):

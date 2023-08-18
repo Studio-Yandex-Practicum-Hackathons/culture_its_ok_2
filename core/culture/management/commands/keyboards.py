@@ -1,8 +1,8 @@
 """Файл с основным наборами кнопок у пользователя.
 Например набор кнопок yes, no у функции exhibit, должен быть тут."""
 from aiogram import Bot
-from aiogram.types import BotCommand, BotCommandScopeDefault
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (BotCommand, BotCommandScopeDefault, KeyboardButton,
+                           ReplyKeyboardMarkup)
 
 MAIN_COMMANDS = ["/routes", '/Знакомство', '/help']
 
