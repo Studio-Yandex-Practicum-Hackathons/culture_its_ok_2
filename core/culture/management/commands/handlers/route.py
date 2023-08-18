@@ -15,10 +15,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import UnknownValueError
 
 
-from ..config import logger, BASE_DIR
+from ..config import logger
 from ..functions import (
     get_id_from_state, speech_to_text_conversion,
-    remove_tmp_files, get_exhibit_from_state,
+    get_exhibit_from_state,
     get_route_from_state
 )
 
@@ -248,7 +248,6 @@ async def get_voice_review(message: Message, state: FSMContext):
     7. Выводим кнопки дальнейших действий или предлагаем ввод текстовых
         команд. Зависит от бизнес-логики.
     '''
-    # Пока сделал через сохранение. Надо переделать на BytesIO
     answer = ''
     voice_file = io.BytesIO()
     await message.bot.download(
@@ -264,10 +263,9 @@ async def get_voice_review(message: Message, state: FSMContext):
     except FeedbackError as e:
         answer = e.message
     if not answer:
-        # await save_review(text=text, state=state)
+        await save_review(text=text, state=state)
         answer = ms.SUCCESSFUL_MESSAGE
-    # await remove_tmp_files(filename=message.voice.file_id)
-    await message.answer(text=f'{answer}\n{text}')
+    await message.answer(text=answer)
     await state.set_state(Route.transition)
 
 

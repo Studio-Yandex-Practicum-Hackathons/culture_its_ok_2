@@ -1,12 +1,9 @@
 """Файл с основными функциями, которые нужны для чистоты кода."""
 import io
-from pathlib import Path
 
 from aiogram.fsm.context import FSMContext
 import speech_recognition as speech_r
 import soundfile as sf
-
-from .config import BASE_DIR
 
 
 async def add_user_information(state: FSMContext) -> None:
@@ -54,13 +51,3 @@ async def speech_to_text_conversion(filename) -> str:
     with audio_file as source:
         audio = recogniser.record(source)
     return recogniser.recognize_google(audio, language='ru-RU')
-
-
-async def remove_tmp_files(filename: str):
-    '''
-    Удаление временных файлов
-    '''
-    path = Path(f'{BASE_DIR}/tmp/voices/{filename}.ogg')
-    path.unlink(missing_ok=True)
-    path = Path(f'{BASE_DIR}/tmp/voices/{filename}.wav')
-    path.unlink(missing_ok=True)
