@@ -1,5 +1,5 @@
 """Файл с основными функциями, которые нужны для чистоты кода."""
-
+import io
 from pathlib import Path
 
 from aiogram.fsm.context import FSMContext
@@ -36,7 +36,7 @@ async def get_route_from_state(state: FSMContext):
     return user_data.get('route_obj')
 
 
-async def speech_to_text_conversion(filename: str) -> str:
+async def speech_to_text_conversion(filename) -> str:
     '''
     Конвертация речи в текст.
 
@@ -46,9 +46,11 @@ async def speech_to_text_conversion(filename: str) -> str:
     2. Конвертация в текст
     '''
     recogniser = speech_r.Recognizer()
-    data, samplerate = sf.read(f'{BASE_DIR}/tmp/voices/{filename}.ogg')
-    sf.write(f'{BASE_DIR}/tmp/voices/{filename}.wav', data, samplerate)
-    audio_file = speech_r.AudioFile(f'{BASE_DIR}/tmp/voices/{filename}.wav')
+    data, samplerate = sf.read(filename)
+    voice_file = io.BytesIO()
+    sf.write(voice_file, data, samplerate, format='WAV', subtype='PCM_16')
+    voice_file.seek(0)
+    audio_file = speech_r.AudioFile(voice_file)
     with audio_file as source:
         audio = recogniser.record(source)
     return recogniser.recognize_google(audio, language='ru-RU')

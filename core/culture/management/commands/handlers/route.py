@@ -1,5 +1,6 @@
 import asyncio
 import emoji
+import io
 
 from aiogram import F, Router
 from aiogram.filters import Command
@@ -249,12 +250,13 @@ async def get_voice_review(message: Message, state: FSMContext):
     '''
     # Пока сделал через сохранение. Надо переделать на BytesIO
     answer = ''
+    voice_file = io.BytesIO()
     await message.bot.download(
         message.voice,
-        destination=f'{BASE_DIR}/tmp/voices/{message.voice.file_id}.ogg'
+        destination=voice_file
     )
     try:
-        text = await speech_to_text_conversion(filename=message.voice.file_id)
+        text = await speech_to_text_conversion(filename=voice_file)
     except UnknownValueError:
         answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
     try:
@@ -262,10 +264,10 @@ async def get_voice_review(message: Message, state: FSMContext):
     except FeedbackError as e:
         answer = e.message
     if not answer:
-        await save_review(text=text, state=state)
+        # await save_review(text=text, state=state)
         answer = ms.SUCCESSFUL_MESSAGE
-    await remove_tmp_files(filename=message.voice.file_id)
-    await message.answer(text=answer)
+    # await remove_tmp_files(filename=message.voice.file_id)
+    await message.answer(text=f'{answer}\n{text}')
     await state.set_state(Route.transition)
 
 
