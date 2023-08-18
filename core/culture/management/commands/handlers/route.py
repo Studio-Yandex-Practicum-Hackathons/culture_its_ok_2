@@ -3,8 +3,6 @@ import asyncio
 import emoji
 import io
 
-
-import emoji
 from aiogram import F, Router
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
@@ -17,12 +15,12 @@ from speech_recognition.exceptions import UnknownValueError
 
 
 from .. import message as ms
-from ..config import BASE_DIR, logger
+from ..config import logger
 from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
                     get_routes_id, save_review)
 from ..exceptions import FeedbackError
 from ..functions import (get_exhibit_from_state, get_id_from_state,
-                         get_route_from_state, remove_tmp_files,
+                         get_route_from_state,
                          speech_to_text_conversion)
 from ..keyboards import (KEYBOARD_YES_NO, make_row_keyboard,
                          make_vertical_keyboard)
