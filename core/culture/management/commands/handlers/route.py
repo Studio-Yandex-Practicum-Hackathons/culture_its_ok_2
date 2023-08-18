@@ -1,6 +1,10 @@
 import asyncio
 
 import emoji
+import io
+
+
+import emoji
 from aiogram import F, Router
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
@@ -10,6 +14,7 @@ from aiogram.types import (FSInputFile, Message, ReplyKeyboardMarkup,
 from aiogram.utils.markdown import code, italic, text
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import UnknownValueError
+
 
 from .. import message as ms
 from ..config import BASE_DIR, logger
@@ -22,7 +27,7 @@ from ..functions import (get_exhibit_from_state, get_id_from_state,
 from ..keyboards import (KEYBOARD_YES_NO, make_row_keyboard,
                          make_vertical_keyboard)
 from ..utils import Route
-from ..validators import feedback_validator
+from ..validators import rewiew_validator
 
 route_router = Router()
 
@@ -237,23 +242,22 @@ async def get_voice_review(message: Message, state: FSMContext):
     7. Выводим кнопки дальнейших действий или предлагаем ввод текстовых
         команд. Зависит от бизнес-логики.
     '''
-    # Пока сделал через сохранение. Надо переделать на BytesIO
     answer = ''
+    voice_file = io.BytesIO()
     await message.bot.download(
         message.voice,
-        destination=f'{BASE_DIR}/tmp/voices/{message.voice.file_id}.ogg'
+        destination=voice_file
     )
     try:
-        text = await speech_to_text_conversion(filename=message.voice.file_id)
+        text = await speech_to_text_conversion(filename=voice_file)
     except UnknownValueError:
         answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
     try:
-        await feedback_validator(text)
+        await rewiew_validator(text)
     except FeedbackError as e:
         answer = e.message
     if not answer:
         await save_review(text=text, state=state)
-        await remove_tmp_files(filename=message.voice.file_id)
         answer = ms.SUCCESSFUL_MESSAGE
     await message.answer(text=answer)
     await state.set_state(Route.transition)

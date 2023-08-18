@@ -17,7 +17,7 @@ async def check_age(age: str):
     return False
 
 
-async def feedback_validator(text: str) -> None:
+async def rewiew_validator(text: str) -> None:
     '''
     Валидация отзыва
 
