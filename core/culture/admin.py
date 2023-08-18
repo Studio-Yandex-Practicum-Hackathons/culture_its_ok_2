@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.http import FileResponse
 
 from .models import Exhibit, FeedBack, Review, Route, RouteExhibit
+from .utils import generate_pdf
 
 
 class ExhibitInline(admin.TabularInline):
@@ -30,6 +32,14 @@ class FeedBackAdmin(admin.ModelAdmin):
     search_fields = ['username', 'text']
     list_filter = ['username', 'text']
     empty_value_display = '-пусто-'
+    actions = ["export_as_pdf"]
+
+    @admin.action(description="Скачать выбранные отзывы в формате .pdf")
+    def export_as_pdf(self, request, queryset):
+        pdf = generate_pdf(queryset)
+        return FileResponse(
+        pdf, as_attachment=True, filename="report.pdf"
+    )
 
 
 @admin.register(Route)
