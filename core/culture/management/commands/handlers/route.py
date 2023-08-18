@@ -265,7 +265,30 @@ async def get_voice_review(message: Message, state: FSMContext):
         await save_review(text=text, state=state)
         answer = ms.SUCCESSFUL_MESSAGE
     await message.answer(text=answer)
-    await state.set_state(Route.transition)
+    exhibit = await get_exhibit_from_state(state)
+
+    route_id, exhibit_number = await get_id_from_state(state)
+    exhibit_number += 1
+    await state.update_data(exhibit_number=exhibit_number)
+    route = await get_route_by_id(route_id)
+    if exhibit_number == len(await get_all_exhibits_by_route(route)):
+        await message.answer(
+            'Конец маршрута',
+            reply_markup=make_row_keyboard(['Конец']),
+        )
+        await state.set_state(Route.quiz)
+    else:
+        if exhibit.transfer_message != '':
+            await message.answer(
+                f"{exhibit.transfer_message}",
+            )
+        await message.answer(
+            'Нас ждут длительные переходы',
+            reply_markup=make_row_keyboard(['Отлично идем дальше']),
+        )
+        exhibit = await get_exhibit(route_id, exhibit_number)
+        await state.update_data(exhibit=exhibit)
+        await state.set_state(Route.transition)
 
 
 # Почему то надо нажать 2 раза да, чтобы перейти к следующему шагу
