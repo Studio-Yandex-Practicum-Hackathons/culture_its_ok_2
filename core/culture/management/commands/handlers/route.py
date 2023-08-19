@@ -277,6 +277,8 @@ async def get_voice_review(message: Message, state: FSMContext):
     await state.set_state(Route.transition)
 
 
+# этот код будет работать только если ботом пользуется только один человек,
+# надо как-то связать target c активным пользовелем
 @route_router.message(Route.transition, F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
