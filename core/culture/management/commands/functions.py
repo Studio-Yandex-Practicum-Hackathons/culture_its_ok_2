@@ -6,13 +6,6 @@ import speech_recognition as speech_r
 from aiogram.fsm.context import FSMContext
 
 
-async def add_user_information(state: FSMContext) -> None:
-    '''
-    Добавляет информацию о пользователе в пдф файл
-    '''
-    return None
-
-
 async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
     """Полученние имени маршрута и номера экспоната из state."""
     user_data = await state.get_data()
@@ -24,7 +17,7 @@ async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
 async def get_exhibit_from_state(state: FSMContext):
     """Полученние экспоната из state."""
     user_data = await state.get_data()
-    return user_data.get('exhibit')
+    return user_data.get('exhibit_obj')
 
 
 async def get_route_from_state(state: FSMContext):

@@ -35,10 +35,6 @@ target = True
 @route_router.message(Command("routes"))
 async def command_start(message: Message, state: FSMContext) -> None:
     """Команда /routes . Предлагает выбрать маршрут."""
-    # await message.reply(
-    #     text=ms.CHOOSE_ROUTE_MESSAGE,
-    #     reply_markup=make_row_keyboard(await get_routes_name()),
-    # )
     keybord = []
     for route in await get_routes_id():
         keybord.append('Маршрут ' + str(route))
@@ -65,7 +61,7 @@ async def start_proute_number(message: Message, state: FSMContext) -> None:
         )
     route_id, exhibit_number = await get_id_from_state(state)
     exhibit = await get_exhibit(route_id, exhibit_number)
-    await state.update_data(exhibit=exhibit)
+    await state.update_data(exhibit_obj=exhibit)
     await state.set_state(Route.exhibit)
 
 
@@ -87,7 +83,15 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
         'Отлично начнем нашу медитацию',
         reply_markup=make_row_keyboard(['Отлично начинаем'])
     )
-    await state.set_state(Route.exhibit)
+    exhibit = await get_exhibit_from_state(state)
+    if exhibit.message_before_description != '':
+        await message.answer(
+            f"{exhibit.message_before_description}",
+        )
+        await state.set_state(Route.podvodka)
+    else:
+        await state.update_data(podvodka=None)
+        await state.set_state(Route.exhibit)
 
 
 @route_router.message(Route.route)
@@ -97,17 +101,6 @@ async def route_info(message: Message, state: FSMContext) -> None:
     await state.set_state(Block.block)
 
     route_id = message.text.split(' ')[-1]
-    # try:
-    #     await get_route_by_name(message.text.capitalize())
-    # except ObjectDoesNotExist:
-    #     logger.error(
-    #                   'Пользователь ввел название маршрута,
-    #                   которого нет в бд.'
-    #       )
-    #     await message.answer(
-    #         'Выбери маршрут из тех, которые представлены на клавиатуре'
-    #     )
-    #     return
     try:
         route = await get_route_by_id(route_id)
     except ObjectDoesNotExist:
@@ -130,7 +123,7 @@ async def route_info(message: Message, state: FSMContext) -> None:
 
     exhibit = await get_exhibit(route_id, 0)
     await state.update_data(route_obj=route)
-    await state.update_data(exhibit=exhibit)
+    await state.update_data(exhibit_obj=exhibit)
 
     await message.answer(
         ms.START_ROUTE_MESSAGE,
@@ -141,6 +134,43 @@ async def route_info(message: Message, state: FSMContext) -> None:
     )
     await message.answer('Если хотите выбрать номер обекта напишите его номер')
     await state.set_state(Route.route)
+
+
+@route_router.message(Route.podvodka,)
+async def podvodka(message: Message, state: FSMContext) -> None:
+    await state.update_data(podvodka=message.text)
+    await exhibit(message, state)
+
+
+@route_router.message(Route.reflaksia,  F.text == 'Нет')
+async def refleksia_no(message: Message, state: FSMContext) -> None:
+    '''Отр рефлексия'''
+    # exhibit = await get_exhibit_from_state(state)
+    await state.update_data(refleksia=message.text)
+    await message.answer(
+        "ТУТ ОТР РЕФЛЕКСИЯ",
+    )
+    await message.answer(
+        'Вам понравилось? напишите, пожалуйста, свои впечатления.',
+        reply_markup=ReplyKeyboardRemove()
+    )
+    await state.set_state(Route.review)
+
+
+# пока что только любой текст кроме слова нет
+@route_router.message(Route.reflaksia,)
+async def refleksia_yes(message: Message, state: FSMContext) -> None:
+    '''Положительная рефлексия'''
+    exhibit = await get_exhibit_from_state(state)
+    await state.update_data(refleksia=message.text)
+    await message.answer(
+        f"{exhibit.message_after_review}",
+    )
+    await message.answer(
+        'Вам понравилось? напишите, пожалуйста, свои впечатления.',
+        reply_markup=ReplyKeyboardRemove()
+    )
+    await state.set_state(Route.review)
 
 
 @route_router.message(
@@ -154,8 +184,6 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     на кнопку да(должно быть 'Отлично! Идем дальше' ??).
     Чек лист 4.7.1-4.7.2.
     """
-    global target
-
     await state.set_state(Block.block)
 
     # надо научится отправлять стикер пользователю (из набора рандомный)
@@ -163,11 +191,6 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     await message.reply(emoji.emojize(':thumbs_up:', language='alias'),)
 
     exhibit = await get_exhibit_from_state(state)
-    print(exhibit)
-    if exhibit.message_before_description != '':
-        await message.answer(
-            f"{exhibit.message_before_description}",
-        )
 
     await message.answer(
         f"{exhibit.description}",
@@ -181,27 +204,27 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     if exhibit.message_before_review != '':
         await message.answer(
             f"{exhibit.message_before_review}",
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard=KEYBOARD_YES_NO,
+                resize_keyboard=True,
+            )
         )
-
-    await asyncio.sleep(10)
-
-    if exhibit.message_after_review != '':
+        await state.set_state(Route.reflaksia)
+    else:
         await message.answer(
-            f"{exhibit.message_after_review}",
+            'Вам понравилось? напишите, пожалуйста, свои впечатления.',
+            reply_markup=ReplyKeyboardRemove()
         )
-
-    await message.answer(
-        'Заполни отзыв на экспонат или что думаете?(фитч лист)',
-        reply_markup=ReplyKeyboardRemove()
-    )
-
-    target = True
-    await state.set_state(Route.review)
+        await state.set_state(Route.review)
 
 
 @route_router.message(Route.review, F.text)
 async def review(message: Message, state: FSMContext) -> None:
     '''Получения отзыва'''
+    global target
+    target = True
+
+    print(await state.get_data())
     text = message.text
     await save_review(text, state)
     await message.answer('Спасибо за ваше наюддение')
@@ -228,7 +251,7 @@ async def review(message: Message, state: FSMContext) -> None:
             reply_markup=make_row_keyboard(['Отлично идем дальше']),
         )
         exhibit = await get_exhibit(route_id, exhibit_number)
-        await state.update_data(exhibit=exhibit)
+        await state.update_data(exhibit_obj=exhibit)
         await state.set_state(Route.transition)
 
 
@@ -289,7 +312,15 @@ async def transition(message: Message, state: FSMContext) -> None:
             break
         if message.text == 'Да' and target:
             target = False
-            await exhibit(message, state)
+            if exhibit_obj.message_before_description != '':
+                await message.answer(
+                    f"{exhibit_obj.message_before_description}",
+                )
+                # не много не так работает , но работает
+                await state.set_state(Route.podvodka)
+            else:
+                await state.update_data(podvodka=None)
+                await exhibit(message, state)
             break
         if message.text != 'Да' and target:
             await message.answer(
