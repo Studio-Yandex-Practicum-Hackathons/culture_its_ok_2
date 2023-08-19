@@ -17,3 +17,8 @@ class User(StatesGroup):
     age = State()
     name = State()
     hobby = State()
+
+
+class Block(StatesGroup):
+    """Класс состояний для марштура."""
+    block = State()
