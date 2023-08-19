@@ -162,7 +162,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     )
 
     image = FSInputFile(path='media/' + str(exhibit.image))
-    await message.answer_document(image)
+    await message.answer_photo(image)
 
     if exhibit.message_before_review != '':
         await message.answer(
@@ -265,14 +265,14 @@ async def get_voice_review(message: Message, state: FSMContext):
 @route_router.message(Route.transition, F.voice | F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
-
     exhibit = await get_exhibit_from_state(state)
     await message.answer(
                 'Следующий объект расположен по адресу: '
                 f'{exhibit.address}\n'
                 'Получилось найти?\n'
                 f'Возможно вам поможет: {exhibit.how_to_pass}',
-                reply_markup=make_row_keyboard(['Да']))
+                reply_markup=make_row_keyboard(['Да'])
+            )
     await state.set_state(Route.exhibit)
 
 

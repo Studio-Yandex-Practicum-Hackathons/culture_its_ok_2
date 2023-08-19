@@ -22,6 +22,7 @@ class PreBase(models.Model):
     address = models.TextField(verbose_name='Точный адрес')
 
     def save(self, *args, **kwargs):
+        """Изменяется раширение изображения?"""
         super(PreBase, self).save(*args, **kwargs)
 
         if self.image:
