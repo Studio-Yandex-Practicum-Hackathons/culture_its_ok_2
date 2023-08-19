@@ -24,7 +24,7 @@ from ..functions import (get_exhibit_from_state, get_id_from_state,
                          speech_to_text_conversion)
 from ..keyboards import (KEYBOARD_YES_NO, make_row_keyboard,
                          make_vertical_keyboard)
-from ..utils import Route
+from ..utils import Route, Block
 from ..validators import rewiew_validator
 
 route_router = Router()
@@ -93,6 +93,9 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
 @route_router.message(Route.route)
 async def route_info(message: Message, state: FSMContext) -> None:
     """Начало пути """
+
+    await state.set_state(Block.block)
+
     route_id = message.text.split(' ')[-1]
     # try:
     #     await get_route_by_name(message.text.capitalize())
@@ -137,6 +140,7 @@ async def route_info(message: Message, state: FSMContext) -> None:
         )
     )
     await message.answer('Если хотите выбрать номер обекта напишите его номер')
+    await state.set_state(Route.route)
 
 
 @route_router.message(
@@ -150,6 +154,9 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     на кнопку да(должно быть 'Отлично! Идем дальше' ??).
     Чек лист 4.7.1-4.7.2.
     """
+    global target
+
+    await state.set_state(Block.block)
 
     exhibit = await get_exhibit_from_state(state)
     print(exhibit)
@@ -157,6 +164,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         await message.answer(
             f"{exhibit.message_before_description}",
         )
+
     await message.answer(
         f"{exhibit.description}",
     )
@@ -164,12 +172,14 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     image = FSInputFile(path='media/' + str(exhibit.image))
     await message.answer_photo(image)
 
+    await asyncio.sleep(10)
+
     if exhibit.message_before_review != '':
         await message.answer(
             f"{exhibit.message_before_review}",
         )
 
-    await asyncio.sleep(3)
+    await asyncio.sleep(10)
 
     if exhibit.message_after_review != '':
         await message.answer(
@@ -180,6 +190,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         'Заполни отзыв на экспонат или что думаете?(фитч лист)',
         reply_markup=ReplyKeyboardRemove()
     )
+    target = True
     await state.set_state(Route.review)
 
 
@@ -265,15 +276,25 @@ async def get_voice_review(message: Message, state: FSMContext):
 @route_router.message(Route.transition, F.voice | F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
-    exhibit = await get_exhibit_from_state(state)
-    await message.answer(
-                'Следующий объект расположен по адресу: '
-                f'{exhibit.address}\n'
-                'Получилось найти?\n'
-                f'Возможно вам поможет: {exhibit.how_to_pass}',
-                reply_markup=make_row_keyboard(['Да'])
-            )
-    await state.set_state(Route.exhibit)
+    global target
+    exhibit_obj = await get_exhibit_from_state(state)
+    while True:
+        if not target:
+            break
+        if message.text == 'Да' and target:
+            target = False
+            await exhibit(message, state)
+            break
+        if message.text != 'Да' and target:
+            await message.answer(
+                        'Следующий объект расположен по адресу: '
+                        f'{exhibit_obj.address}\n'
+                        'Получилось найти?\n'
+                        f'Возможно вам поможет: {exhibit_obj.how_to_pass}',
+                        reply_markup=make_row_keyboard(['Да'])
+                    )
+            await asyncio.sleep(3)
+            continue
 
 
 @route_router.message(Route.quiz)
