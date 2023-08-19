@@ -11,7 +11,7 @@ from aiogram.types import (FSInputFile, Message, ReplyKeyboardMarkup,
                            ReplyKeyboardRemove)
 from aiogram.utils.markdown import code, italic, text
 from django.core.exceptions import ObjectDoesNotExist
-from speech_recognition.exceptions import UnknownValueError
+from speech_recognition.exceptions import RequestError, UnknownValueError
 
 
 from .. import message as ms
@@ -183,112 +183,62 @@ async def exhibit(message: Message, state: FSMContext) -> None:
     await state.set_state(Route.review)
 
 
-@route_router.message(Route.review, F.text)
+@route_router.message(Route.review, F.text | F.voice)
 async def review(message: Message, state: FSMContext) -> None:
     '''Получения отзыва'''
     answer = ''
-    text = message.text
-    try:
-        await rewiew_validator(text)
-    except FeedbackError as e:
-        answer = e.message
+    if message.voice:
+        voice_file = io.BytesIO()
+        await message.bot.download(
+            message.voice,
+            destination=voice_file
+        )
+        try:
+            text = await speech_to_text_conversion(filename=voice_file)
+        except UnknownValueError:
+            answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
+        except RequestError:
+            answer = ('В данный момент я не могу понимать голосовые '
+                      'сообщения. Используй, пожалуйста, текст.')
+    else:
+        text = message.text
+    if not answer:
+        try:
+            await rewiew_validator(text)
+        except FeedbackError as e:
+            answer = e.message
     if not answer:
         await save_review(text, state)
         answer = ms.SUCCESSFUL_MESSAGE
-    await message.answer(text=answer)
+        await message.answer(text=answer)
 
-    exhibit = await get_exhibit_from_state(state)
+        exhibit = await get_exhibit_from_state(state)
 
-    route_id, exhibit_number = await get_id_from_state(state)
-    exhibit_number += 1
-    await state.update_data(exhibit_number=exhibit_number)
-    route = await get_route_by_id(route_id)
-    if exhibit_number == len(await get_all_exhibits_by_route(route)):
-        await message.answer(
-            'Конец маршрута',
-            reply_markup=make_row_keyboard(['Конец']),
-        )
-        await state.set_state(Route.quiz)
-    else:
-        if exhibit.transfer_message != '':
+        route_id, exhibit_number = await get_id_from_state(state)
+        exhibit_number += 1
+        await state.update_data(exhibit_number=exhibit_number)
+        route = await get_route_by_id(route_id)
+        if exhibit_number == len(await get_all_exhibits_by_route(route)):
             await message.answer(
-                f"{exhibit.transfer_message}",
+                'Конец маршрута',
+                reply_markup=make_row_keyboard(['Конец']),
             )
-        await message.answer(
-            'Нас ждут длительные переходы',
-            reply_markup=make_row_keyboard(['Отлично идем дальше']),
-        )
-        exhibit = await get_exhibit(route_id, exhibit_number)
-        await state.update_data(exhibit=exhibit)
-        await state.set_state(Route.transition)
-
-
-@route_router.message(Route.review, F.voice)
-async def get_voice_review(message: Message, state: FSMContext):
-    '''
-    Обработка голосового отзыва.
-    1. Функция запускается если Route.review is True & F.voice is True.
-        Временно перехватывает все голосовые.
-    2. Получаем текст из аудио. Планирую через speech recognition.
-            Текст получен.
-    3. Вызываем валидатор для проверки, что сообщение соответствует критериям.
-        Возможные критерии: сообщение не пустое, в сообщение минимум N слов,
-                            сообщение не может состоять только из цифр,
-                            мат(если получится).
-            Валидатор готов.
-    4. Если проверка не пройдена формируем ответ о проблеме с рекомендациями,
-        что исправить.
-            В случае ошибки райзится исключение. Из него забираем сообщение
-            и передаем его пользователю в ответе.
-    5. Вызываем функцию для сохранения отзыва в БД.
-            В функцию передаём текст и модель юзера.
-    6. Формируем ответ типа Спасибо за отзыв.
-            Если не возникло ошибок передаем в ответ сообщение об успехе.
-    7. Выводим кнопки дальнейших действий или предлагаем ввод текстовых
-        команд. Зависит от бизнес-логики.
-    '''
-    answer = ''
-    voice_file = io.BytesIO()
-    await message.bot.download(
-        message.voice,
-        destination=voice_file
-    )
-    try:
-        text = await speech_to_text_conversion(filename=voice_file)
-    except UnknownValueError:
-        answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
-    try:
-        await rewiew_validator(text)
-    except FeedbackError as e:
-        answer = e.message
-    if not answer:
-        await save_review(text=text, state=state)
-        answer = ms.SUCCESSFUL_MESSAGE
-    await message.answer(text=answer)
-    exhibit = await get_exhibit_from_state(state)
-
-    route_id, exhibit_number = await get_id_from_state(state)
-    exhibit_number += 1
-    await state.update_data(exhibit_number=exhibit_number)
-    route = await get_route_by_id(route_id)
-    if exhibit_number == len(await get_all_exhibits_by_route(route)):
-        await message.answer(
-            'Конец маршрута',
-            reply_markup=make_row_keyboard(['Конец']),
-        )
-        await state.set_state(Route.quiz)
-    else:
-        if exhibit.transfer_message != '':
+            await state.set_state(Route.quiz)
+        else:
+            if exhibit.transfer_message != '':
+                await message.answer(
+                    f"{exhibit.transfer_message}",
+                )
             await message.answer(
-                f"{exhibit.transfer_message}",
+                'Нас ждут длительные переходы',
+                reply_markup=make_row_keyboard(['Отлично идем дальше']),
             )
-        await message.answer(
-            'Нас ждут длительные переходы',
-            reply_markup=make_row_keyboard(['Отлично идем дальше']),
-        )
-        exhibit = await get_exhibit(route_id, exhibit_number)
-        await state.update_data(exhibit=exhibit)
-        await state.set_state(Route.transition)
+            exhibit = await get_exhibit(route_id, exhibit_number)
+            await state.update_data(exhibit=exhibit)
+            await state.set_state(Route.transition)
+    else:
+        await message.answer(text=f'{answer}\nПопробуйте снова.')
+        await state.set_state(Route.review)
 
 
 # Почему то надо нажать 2 раза да, чтобы перейти к следующему шагу
