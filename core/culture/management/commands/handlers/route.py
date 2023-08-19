@@ -158,6 +158,10 @@ async def exhibit(message: Message, state: FSMContext) -> None:
 
     await state.set_state(Block.block)
 
+    # надо научится отправлять стикер пользователю (из набора рандомный)
+
+    await message.reply(emoji.emojize(':thumbs_up:', language='alias'),)
+
     exhibit = await get_exhibit_from_state(state)
     print(exhibit)
     if exhibit.message_before_description != '':
@@ -190,6 +194,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         'Заполни отзыв на экспонат или что думаете?(фитч лист)',
         reply_markup=ReplyKeyboardRemove()
     )
+
     target = True
     await state.set_state(Route.review)
 
@@ -272,8 +277,7 @@ async def get_voice_review(message: Message, state: FSMContext):
     await state.set_state(Route.transition)
 
 
-# Почему то надо нажать 2 раза да, чтобы перейти к следующему шагу
-@route_router.message(Route.transition, F.voice | F.text)
+@route_router.message(Route.transition, F.text)
 async def transition(message: Message, state: FSMContext) -> None:
     '''Переход'''
     global target
