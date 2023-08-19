@@ -15,7 +15,7 @@ from speech_recognition.exceptions import RequestError, UnknownValueError
 
 
 from .. import message as ms
-from ..config import logger
+from ..config import logger, MAXIMUM_DURATION_VOICE_MESSAGE
 from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
                     get_routes_id, save_review)
 from ..exceptions import FeedbackError
@@ -226,18 +226,22 @@ async def review(message: Message, state: FSMContext) -> None:
     print(await state.get_data())
     answer = ''
     if message.voice:
-        voice_file = io.BytesIO()
-        await message.bot.download(
-            message.voice,
-            destination=voice_file
-        )
-        try:
-            text = await speech_to_text_conversion(filename=voice_file)
-        except UnknownValueError:
-            answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
-        except RequestError:
-            answer = ('В данный момент я не могу понимать голосовые '
-                      'сообщения. Используй, пожалуйста, текст.')
+        if message.voice.duration <= MAXIMUM_DURATION_VOICE_MESSAGE:
+            voice_file = io.BytesIO()
+            await message.bot.download(
+                message.voice,
+                destination=voice_file
+            )
+            try:
+                text = await speech_to_text_conversion(filename=voice_file)
+            except UnknownValueError:
+                answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
+            except RequestError:
+                answer = ('В данный момент я не могу понимать голосовые '
+                          'сообщения. Используй, пожалуйста, текст.')
+        else:
+            answer = (f'Голосовое сообщение должно быть менее '
+                      f'{MAXIMUM_DURATION_VOICE_MESSAGE}')
     else:
         text = message.text
     if not answer:
