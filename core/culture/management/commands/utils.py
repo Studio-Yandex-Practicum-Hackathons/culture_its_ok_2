@@ -7,6 +7,8 @@ class Route(StatesGroup):
     """Класс состояний для марштура."""
     route = State()
     exhibit = State()
+    podvodka = State()
+    reflaksia = State()
     review = State()
     transition = State()
     quiz = State()
@@ -20,5 +22,5 @@ class User(StatesGroup):
 
 
 class Block(StatesGroup):
-    """Класс состояний для марштура."""
+    """Класс состояний для блокировки."""
     block = State()

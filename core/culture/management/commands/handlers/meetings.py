@@ -4,7 +4,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from .. import message as ms
-from ..functions import add_user_information
 from ..keyboards import MAIN_COMMANDS, make_vertical_keyboard
 from ..utils import User
 from ..validators import check_age, check_name
@@ -47,7 +46,6 @@ async def get_age(message: Message, state: FSMContext) -> None:
 async def get_hobby(message: Message, state: FSMContext) -> None:
     """Получает хобби пользователя"""
     await state.update_data(hobby=message.text)
-    await add_user_information(state)
     await message.answer(
         'Приятно познакомится',
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)
