@@ -218,7 +218,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         await state.set_state(Route.review)
 
 
-def get_keyboard():
+def keyboard_for_send_review():
     buttons = [
         [
             types.InlineKeyboardButton(
@@ -301,7 +301,7 @@ async def review(message: Message, state: FSMContext) -> None:
             await state.set_state(Route.transition)
     else:
         await message.answer(text=f'{answer}\nПопробуйте снова.',
-                             reply_markup=get_keyboard())
+                             reply_markup=keyboard_for_send_review())
         # await state.set_state(Route.review)
 
 
@@ -310,6 +310,35 @@ async def resend_review(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.answer('Напишите ваше мнение')
     await state.set_state(Route.review)
+
+
+@route_router.callback_query(F.data == 'dont_send_review')
+async def skip_send_review(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
+    exhibit = await get_exhibit_from_state(state)
+
+    route_id, exhibit_number = await get_id_from_state(state)
+    exhibit_number += 1
+    await state.update_data(exhibit_number=exhibit_number)
+    route = await get_route_by_id(route_id)
+    if exhibit_number == len(await get_all_exhibits_by_route(route)):
+        await callback.message.answer(
+            'Конец маршрута',
+            reply_markup=make_row_keyboard(['Конец']),
+        )
+        await state.set_state(Route.quiz)
+    else:
+        if exhibit.transfer_message != '':
+            await callback.message.answer(
+                f"{exhibit.transfer_message}",
+            )
+        await callback.message.answer(
+            'Нас ждут длительные переходы',
+            reply_markup=make_row_keyboard(['Отлично идем дальше']),
+        )
+        exhibit = await get_exhibit(route_id, exhibit_number)
+        await state.update_data(exhibit_obj=exhibit)
+        await state.set_state(Route.transition)
 
 
 # этот код будет работать только если ботом пользуется только один человек,
