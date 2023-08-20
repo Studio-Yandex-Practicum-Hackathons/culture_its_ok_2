@@ -9,7 +9,6 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (FSInputFile, Message, ReplyKeyboardMarkup,
                            ReplyKeyboardRemove)
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.markdown import code, italic, text
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import RequestError, UnknownValueError
@@ -222,8 +221,12 @@ async def exhibit(message: Message, state: FSMContext) -> None:
 def get_keyboard():
     buttons = [
         [
-            types.InlineKeyboardButton(text='Оставить отзыв', callback_data='send_review'),
-            types.InlineKeyboardButton(text='Без отзыва', callback_data='dont_send_review')
+            types.InlineKeyboardButton(
+                text='Оставить отзыв', callback_data='send_review'
+            ),
+            types.InlineKeyboardButton(
+                text='Без отзыва', callback_data='dont_send_review'
+            )
         ]
     ]
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
