@@ -12,9 +12,9 @@ class ExhibitInline(admin.TabularInline):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'username', 'exhibit', 'text',)
+    list_display = ('pk', 'username', 'exhibit',)
     search_fields = ['exhibit__name', 'username']
-    list_filter = ['exhibit', 'text', 'username']
+    list_filter = ['exhibit', 'username']
     empty_value_display = '-пусто-'
 
 
@@ -28,13 +28,13 @@ class ExhibitAdmin(admin.ModelAdmin):
 
 @admin.register(FeedBack)
 class FeedBackAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'username', 'text',)
-    search_fields = ['username', 'text']
-    list_filter = ['username', 'text']
+    list_display = ('pk', 'email', 'text',)
+    search_fields = ['email', 'text']
+    list_filter = ['email', 'text']
     empty_value_display = '-пусто-'
     actions = ["export_as_pdf"]
 
-    @admin.action(description="Скачать выбранные отзывы в формате .pdf")
+    @admin.action(description="Скачать выбранные опросы в формате .pdf")
     def export_as_pdf(self, request, queryset):
         pdf = generate_pdf(queryset)
         return FileResponse(
