@@ -4,6 +4,11 @@ import io
 import soundfile as sf
 import speech_recognition as speech_r
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
+
+from .crud import get_all_exhibits_by_route, get_exhibit, get_route_by_id
+from .keyboards import make_row_keyboard
+from .utils import Route
 
 
 async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
@@ -44,3 +49,32 @@ async def speech_to_text_conversion(filename) -> str:
     with audio_file as source:
         audio = recogniser.record(source)
     return recogniser.recognize_google(audio, language='ru-RU')
+
+
+async def set_route(state: FSMContext, message: Message):
+    '''
+    Устанавливает состояние Route в зависимости кончился маршрут или нет.
+    '''
+    exhibit = await get_exhibit_from_state(state)
+    route_id, exhibit_number = await get_id_from_state(state)
+    exhibit_number += 1
+    await state.update_data(exhibit_number=exhibit_number)
+    route = await get_route_by_id(route_id)
+    if exhibit_number == len(await get_all_exhibits_by_route(route)):
+        await message.answer(
+            'Конец маршрута',
+            reply_markup=make_row_keyboard(['Конец']),
+        )
+        await state.set_state(Route.quiz)
+    else:
+        if exhibit.transfer_message != '':
+            await message.answer(
+                f"{exhibit.transfer_message}",
+            )
+        await message.answer(
+            'Нас ждут длительные переходы',
+            reply_markup=make_row_keyboard(['Отлично идем дальше']),
+        )
+        exhibit = await get_exhibit(route_id, exhibit_number)
+        await state.update_data(exhibit_obj=exhibit)
+        await state.set_state(Route.transition)
