@@ -57,18 +57,22 @@ async def start_proute_number(message: Message, state: FSMContext) -> None:
         )
         return
     number = int(message.text) - 1
-    await message.answer(
-        f'Вы выбрали номер обекта={message.text}'
-        f'Обьект расположен по адресу'
-    )
     await state.update_data(exhibit_number=number)
-    await message.answer(
-        'Готовы перейти?',
-        reply_markup=make_row_keyboard(['Да']),
-        )
+
     route_id, exhibit_number = await get_id_from_state(state)
     exhibit = await get_exhibit(route_id, exhibit_number)
     await state.update_data(exhibit_obj=exhibit)
+
+    await message.answer(
+        f'Вы выбрали номер объекта={message.text} \n'
+        f'Обьект расположен по адресу: {exhibit.address}'
+    )
+
+    await message.answer(
+        'Нажмите Да, когда будете возле экспоната',
+        reply_markup=make_row_keyboard(['Да']),
+        )
+
     await state.set_state(Route.exhibit)
 
 
@@ -147,6 +151,12 @@ async def route_info(message: Message, state: FSMContext) -> None:
     await state.update_data(route_obj=route)
     await state.update_data(exhibit_obj=exhibit)
 
+    await asyncio.sleep(3)
+
+    await message.answer(
+        f'Медитация начинается по адресу {route.address}\n'
+        'Если хотите выбрать номер обекта напишите его номер'
+    )
     await message.answer(
         ms.START_ROUTE_MESSAGE,
         reply_markup=ReplyKeyboardMarkup(
@@ -154,7 +164,6 @@ async def route_info(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         )
     )
-    await message.answer('Если хотите выбрать номер обекта напишите его номер')
     await state.set_state(Route.route)
 
 
@@ -233,6 +242,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         )
         await state.set_state(Route.reflaksia)
     else:
+        await state.update_data(refleksia=None)
         await message.answer(
             'Вам понравилось? напишите, пожалуйста, свои впечатления.',
             reply_markup=ReplyKeyboardRemove()
@@ -336,15 +346,15 @@ async def transition(message: Message, state: FSMContext) -> None:
                         f'Возможно вам поможет: {exhibit_obj.how_to_pass}',
                         reply_markup=make_row_keyboard(['Да'])
                     )
-            await asyncio.sleep(3)
+            await asyncio.sleep(10)
             continue
 
 
 @route_router.message(Route.quiz)
 async def end_route(message: Message, state: FSMContext) -> None:
     '''Конец маршрута'''
-    await message.answer('Клманда будет рада отклику\nСсылка на форму')
-    await state.clear()
+    await message.answer('Команда будет рада отклику\nСсылка на форму')
+    await state.set_state(None)
     await message.answer(
         'Вернутся на выбор маршрута',
         reply_markup=make_row_keyboard(['/routes'])
@@ -356,7 +366,8 @@ async def unknown_text(message: Message):
     """Ловит все сообщения от пользователя,
     если они не попадают под условиях функций выше.
     """
-    await message.answer('Я тебя не понимаю, попробую использовать команды.')
+    pass
+    # await message.answer('Я тебя не понимаю, попробую использовать команды.')
 
 
 @route_router.message(F.content_type.ANY)
