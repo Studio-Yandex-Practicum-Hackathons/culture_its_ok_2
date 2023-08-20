@@ -1,8 +1,9 @@
 """Файл с основным наборами кнопок у пользователя.
 Например набор кнопок yes, no у функции exhibit, должен быть тут."""
 from aiogram import Bot
-from aiogram.types import (BotCommand, BotCommandScopeDefault, KeyboardButton,
-                           ReplyKeyboardMarkup)
+from aiogram.types import (BotCommand, BotCommandScopeDefault,
+                           InlineKeyboardButton, InlineKeyboardMarkup,
+                           KeyboardButton, ReplyKeyboardMarkup)
 
 MAIN_COMMANDS = ["/routes", '/help']
 
@@ -63,3 +64,21 @@ def make_vertical_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=vertical_keyboard, resize_keyboard=True
     )
+
+
+def keyboard_for_send_review():
+    '''
+    Создаёт инлайн клавиатуру из двух кнопок.
+    '''
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text='Оставить отзыв', callback_data='send_review'
+            ),
+            InlineKeyboardButton(
+                text='Без отзыва', callback_data='dont_send_review'
+            )
+        ]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard

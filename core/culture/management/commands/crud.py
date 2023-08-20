@@ -45,7 +45,14 @@ async def save_review(text: str, state: FSMContext):
         data.get('route'),
         data.get('exhibit_number')
     )
-    await Review.objects.acreate(text=text, exhibit=exhibit)
+    await Review.objects.acreate(
+        text=text, exhibit=exhibit,
+        username=data.get('name'),
+        userage=data.get('userage'),
+        userhobby=data.get('hobby'),
+        answer_to_message_before_description=data.get('podvodka'),
+        answer_to_reflection=data.get('refleksia')
+    )
 
 
 async def get_all_exhibits_by_route(route):
