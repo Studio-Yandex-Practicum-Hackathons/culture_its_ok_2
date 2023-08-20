@@ -164,7 +164,7 @@ async def refleksia_yes(message: Message, state: FSMContext) -> None:
     exhibit = await get_exhibit_from_state(state)
     await state.update_data(refleksia=message.text)
     await message.answer(
-        f"{exhibit.message_after_review}",
+        f"{exhibit.reflection_positive}",
     )
     await message.answer(
         'Вам понравилось? напишите, пожалуйста, свои впечатления.',
@@ -201,9 +201,9 @@ async def exhibit(message: Message, state: FSMContext) -> None:
 
     await asyncio.sleep(10)
 
-    if exhibit.message_before_review != '':
+    if exhibit.reflection != '':
         await message.answer(
-            f"{exhibit.message_before_review}",
+            f"{exhibit.reflection}",
             reply_markup=ReplyKeyboardMarkup(
                 keyboard=KEYBOARD_YES_NO,
                 resize_keyboard=True,
