@@ -164,6 +164,7 @@ class Review(models.Model):
         default='Ответа не было.',
         blank=True,
     )
+    text = models.TextField(verbose_name='Текст отзыва')
 
     class Meta:
         verbose_name = 'Отзыв'
