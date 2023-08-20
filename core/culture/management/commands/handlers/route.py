@@ -101,7 +101,7 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
         )
         await state.set_state(Route.podvodka)
     else:
-        await state.update_data(podvodka=None)
+        await state.update_data(podvodka='Нет подводки')
         await state.set_state(Route.exhibit)
 
 
@@ -242,7 +242,7 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         )
         await state.set_state(Route.reflaksia)
     else:
-        await state.update_data(refleksia=None)
+        await state.update_data(refleksia='Нет рефлексии')
         await message.answer(
             'Вам понравилось? напишите, пожалуйста, свои впечатления.',
             reply_markup=ReplyKeyboardRemove()
@@ -326,7 +326,7 @@ async def transition(message: Message, state: FSMContext) -> None:
                 # не много не так работает , но работает
                 await state.set_state(Route.podvodka)
             else:
-                await state.update_data(podvodka=None)
+                await state.update_data(podvodka='Нет подводки')
                 await exhibit(message, state)
             break
         if message.text != 'Да' and target:

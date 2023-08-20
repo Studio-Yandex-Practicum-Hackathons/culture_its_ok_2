@@ -158,11 +158,13 @@ class Review(models.Model):
         verbose_name='Ответ на подводку',
         default='Вопроса не было.',
         blank=True,
+        null=True,
     )
     answer_to_reflection = models.TextField(
         verbose_name='Ответ на рефлексию',
         default='Ответа не было.',
         blank=True,
+        null=True,
     )
     text = models.TextField(verbose_name='Текст отзыва')
 
