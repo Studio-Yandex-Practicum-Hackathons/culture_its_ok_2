@@ -304,6 +304,7 @@ async def review(message: Message, state: FSMContext) -> None:
 
 @route_router.callback_query(F.data == 'send_review')
 async def resend_review(callback: types.CallbackQuery, state: FSMContext):
+    await callback.answer()
     await callback.message.answer('Напишите ваше мнение')
     await state.set_state(Route.review)
 
