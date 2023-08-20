@@ -3,12 +3,13 @@ import asyncio
 import emoji
 import io
 
-from aiogram import F, Router
+from aiogram import F, Router, types
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (FSInputFile, Message, ReplyKeyboardMarkup,
                            ReplyKeyboardRemove)
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.markdown import code, italic, text
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import RequestError, UnknownValueError
@@ -218,12 +219,28 @@ async def exhibit(message: Message, state: FSMContext) -> None:
         await state.set_state(Route.review)
 
 
+def get_keyboard():
+    buttons = [
+        [
+            types.InlineKeyboardButton(text='Оставить отзыв', callback_data='send_review'),
+            types.InlineKeyboardButton(text='Без отзыва', callback_data='dont_send_review')
+        ]
+    ]
+    keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
+
+
 @route_router.message(Route.review, F.text | F.voice)
 async def review(message: Message, state: FSMContext) -> None:
     '''Получения отзыва'''
     global target
     target = True
     print(await state.get_data())
+    # builder = InlineKeyboardBuilder()
+    # builder.add(types.InlineKeyboardButton(
+    #     text='Оставить отзыв',
+    #     callback_data='send_review'
+    # ))
     answer = ''
     if message.voice:
         if message.voice.duration <= MAXIMUM_DURATION_VOICE_MESSAGE:
@@ -280,8 +297,15 @@ async def review(message: Message, state: FSMContext) -> None:
             await state.update_data(exhibit_obj=exhibit)
             await state.set_state(Route.transition)
     else:
-        await message.answer(text=f'{answer}\nПопробуйте снова.')
-        await state.set_state(Route.review)
+        await message.answer(text=f'{answer}\nПопробуйте снова.',
+                             reply_markup=get_keyboard())
+        # await state.set_state(Route.review)
+
+
+@route_router.callback_query(F.data == 'send_review')
+async def resend_review(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.answer('Напишите ваше мнение')
+    await state.set_state(Route.review)
 
 
 # этот код будет работать только если ботом пользуется только один человек,
