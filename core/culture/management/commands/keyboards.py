@@ -4,7 +4,7 @@ from aiogram import Bot
 from aiogram.types import (BotCommand, BotCommandScopeDefault, KeyboardButton,
                            ReplyKeyboardMarkup)
 
-MAIN_COMMANDS = ["/routes", '/Знакомство', '/help']
+MAIN_COMMANDS = ["/routes", '/help']
 
 KEYBOARD_START = [[KeyboardButton(text="routes"), ]]
 KEYBOARD_YES_NO = [[KeyboardButton(text="Да"), KeyboardButton(text="Нет"), ]]

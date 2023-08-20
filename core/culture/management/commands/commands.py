@@ -9,10 +9,12 @@ from aiogram.fsm.context import FSMContext
 
 from .config import ADMIN_ID
 from .keyboards import (
-    make_vertical_keyboard, MAIN_COMMANDS, set_command
+    set_command
 )
 from .handlers import meetings_router, route_router
 from . import message as ms
+from .utils import User
+
 
 main_router = Router()
 main_router.include_router(meetings_router)
@@ -55,19 +57,10 @@ async def cmd_cancel(message: Message, state: FSMContext):
 
 
 @main_router.message(CommandStart())
-async def command_main_start(message: Message) -> None:
+async def command_main_start(message: Message, state: FSMContext) -> None:
     """Команда /start. Должна приветствовать пользователя."""
     await message.answer(
         text=ms.GREETING_MESSAGE,
-        reply_markup=make_vertical_keyboard(MAIN_COMMANDS)
     )
-
-# Надо исправить
-# @meetings_router.message(F.text.in_({'СТАРТ', 'Знакомство', 'Помощь'}))
-# async def get_acquainted(message: Message, state: FSMContext) -> None:
-#     if message.text == "СТАРТ":
-#         await command_start(message, state)
-#     elif message.text == "Знакомство":
-#         await get_acquainted(message, state)
-#     elif message.text == "Помощь":
-#         await help_info(message)
+    await message.answer("Давай познакомимся.\nКак тебя зовут?")
+    await state.set_state(User.name)

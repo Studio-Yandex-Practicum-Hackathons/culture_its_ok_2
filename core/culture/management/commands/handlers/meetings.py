@@ -1,5 +1,4 @@
 from aiogram import Router
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
@@ -9,13 +8,6 @@ from ..utils import User
 from ..validators import check_age, check_name
 
 meetings_router = Router()
-
-
-@meetings_router.message(Command('acquaintance'))
-async def get_acquainted(message: Message, state: FSMContext) -> None:
-    '''Знакомство'''
-    await message.answer("Давай познакомимся.\nКак тебя зовут?")
-    await state.set_state(User.name)
 
 
 @meetings_router.message(User.name)
@@ -46,8 +38,11 @@ async def get_age(message: Message, state: FSMContext) -> None:
 async def get_hobby(message: Message, state: FSMContext) -> None:
     """Получает хобби пользователя"""
     await state.update_data(hobby=message.text)
+    data = await state.get_data()
+    name = data.get('name')
     await message.answer(
-        'Приятно познакомится',
+        f'Приятно познакомится {name}! \n'
+        'Нажмите на команду /routes для выбора маршрута.',
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)
     )
     await state.set_state(None)
