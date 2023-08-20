@@ -34,7 +34,6 @@ async def get_exhibit(route_id: str, exhibit_number: int):
     Надо исправить"""
     route = await get_route_by_id(route_id)
     exhibit = (await get_all_exhibits_by_route(route))[exhibit_number]
-    print(exhibit)
     return exhibit
 
 
