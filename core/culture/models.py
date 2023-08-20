@@ -1,5 +1,5 @@
-from PIL import Image
 from django.db import models
+from PIL import Image
 
 
 class PreBase(models.Model):
@@ -16,8 +16,6 @@ class PreBase(models.Model):
     image = models.ImageField(
         upload_to='pictures',
         verbose_name='Фото',
-        blank=True,
-        null=True,
         )
     address = models.TextField(verbose_name='Точный адрес')
 
@@ -41,31 +39,16 @@ class PreBase(models.Model):
         return self.name
 
 
-class Base(models.Model):
-    """Родительская модель для комментариев и отзывов"""
-    username = models.CharField(
-        max_length=100,
-        verbose_name='Имя',
-        default='Аноним',
-    )
-    userage = models.IntegerField(
-        blank=True,
-        null=True,
-        verbose_name='Возраст'
-        )
-    userhobby = models.CharField(
-        max_length=150,
-        verbose_name='Хобби',
-        default='Не указано',
-    )
-    text = models.TextField(verbose_name='Отзыв')
-
-    class Meta:
-        abstract = True
-
-
 class Route(PreBase):
     """Модель для описания маршрутов"""
+    route_map = models.ImageField(
+        upload_to='pictures',
+        verbose_name='Карта маршрута',
+        )
+    text_route_start = models.TextField(
+        verbose_name='Текст к месту начала маршрута',
+        blank=True,
+    )
     exhibite = models.ManyToManyField(
         'Exhibit',
         through='RouteExhibit',
@@ -93,20 +76,24 @@ class Exhibit(PreBase):
         blank=True,
         )
     message_before_description = models.TextField(
-        verbose_name='Сообщение перед описанием объекта',
+        verbose_name='Подводка',
         blank=True,
         )
-    message_before_review = models.TextField(
-        verbose_name='Сообщение перед комментарием пользователя',
-        default='Напишите, что вы думаете об этом?'
+    reflection = models.TextField(
+        verbose_name='Рефлексии',
+        blank=True,
         )
-    message_after_review = models.TextField(
-        verbose_name='Сообщение после комментария пользователя',
-        default='Спасибо! Ваше мнение очень важно для нас!'
+    reflection_positive = models.TextField(
+        verbose_name='Сообщение после положительного ответа пользователя',
+        blank=True,
+        )
+    reflection_negative = models.TextField(
+        verbose_name='Сообщение после отрицательного ответа пользователя',
+        blank=True,
         )
     transfer_message = models.TextField(
         verbose_name='Сообщение для перехода к следующему объекту',
-        default='Отлично, идем дальше!'
+        blank=True,
         )
 
     class Meta:
@@ -144,25 +131,39 @@ class RouteExhibit (models.Model):
         return f'Объект {self.exhibit.pk}'
 
 
-class Review(Base):
-    """Модель для комментариев пользователя"""
+class Review(models.Model):
+    """Модель для отзывов пользователя"""
+    username = models.CharField(
+        max_length=100,
+        verbose_name='Имя',
+        default='Аноним',
+    )
+    userage = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Возраст'
+        )
+    userhobby = models.CharField(
+        max_length=150,
+        verbose_name='Хобби',
+        default='Не указано',
+    )
     exhibit = models.ForeignKey(
         Exhibit,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Объект',
     )
-
-    class Meta:
-        verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'
-
-    def __str__(self):
-        return f'Комментарий {self.pk}'
-
-
-class FeedBack(Base):
-    """Модель для отзывов пользователя"""
+    answer_to_message_before_description = models.TextField(
+        verbose_name='Ответ на подводку',
+        default='Вопроса не было.',
+        blank=True,
+    )
+    answer_to_reflection = models.TextField(
+        verbose_name='Ответ на рефлексию',
+        default='Ответа не было.',
+        blank=True,
+    )
 
     class Meta:
         verbose_name = 'Отзыв'
@@ -170,3 +171,21 @@ class FeedBack(Base):
 
     def __str__(self):
         return f'Отзыв {self.pk}'
+
+
+class FeedBack(models.Model):
+    """Модель для опросов пользователя"""
+    email = models.EmailField(max_length=254, unique=True)
+    route = models.ForeignKey(
+        Route,
+        on_delete=models.CASCADE,
+        verbose_name='Маршрут',
+    )
+    text = models.TextField(verbose_name='Отзыв на маршрут')
+
+    class Meta:
+        verbose_name = 'Опрос'
+        verbose_name_plural = 'Опросы'
+
+    def __str__(self):
+        return f'Опрос {self.pk}'
