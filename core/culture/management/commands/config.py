@@ -12,6 +12,7 @@ ADMIN_ID = os.getenv('ADMIN_ID')
 
 
 MINIMUM_WORDS_REVIEW: int = 3
+MAXIMUM_DURATION_VOICE_MESSAGE: int = 10
 
 logging.basicConfig(
     handlers=[logging.FileHandler(
