@@ -48,7 +48,14 @@ async def command_start(message: Message, state: FSMContext) -> None:
 @route_router.message(Route.route,  F.text.regexp(r'\d+'))
 async def start_proute_number(message: Message, state: FSMContext) -> None:
     '''Поиск маршрута'''
-    # проверка что введнный номер < len(route.exhibite.all())
+    data = await state.get_data()
+    count_exhibit = data.get('count_exhibits')
+    if int(message.text) > count_exhibit:
+        await message.answer(
+            f'Вы ввели число, которое превышает {count_exhibit} \n'
+            f'Пожалуйста повторите попытку или выберет Да/Нет'
+        )
+        return
     number = int(message.text) - 1
     await message.answer(
         f'Вы выбрали номер обекта={message.text}'
@@ -73,7 +80,7 @@ async def start_route_no(message: Message, state: FSMContext) -> None:
     await message.answer(
         'Вы стоите в начале?',
         reply_markup=make_row_keyboard(['Да']),
-        )
+    )
 
 
 @route_router.message(Route.route,  F.text == 'Да')
@@ -99,7 +106,6 @@ async def route_info(message: Message, state: FSMContext) -> None:
     """Начало пути """
 
     await state.set_state(Block.block)
-
     route_id = message.text.split(' ')[-1]
     try:
         route = await get_route_by_id(route_id)
@@ -109,17 +115,33 @@ async def route_info(message: Message, state: FSMContext) -> None:
             'Выбери маршрут из тех, которые представлены на клавиатуре'
         )
         return
-    await message.answer('Описания маршрута')
     await message.answer(
-        f"Название маршрута {route.name}\n"
-        f"Описание {route.description}\n"
+        f"Название маршрута: {route.name}\n"
+        f"{route.description}\n"
     )
-    await asyncio.sleep(1)
+    await asyncio.sleep(3)
+    count_exhibits = len(await get_all_exhibits_by_route(route))
+    await message.answer(
+        f'Данный маршрут состоит из {count_exhibits} экспонатов!'
+    )
+
+    await message.answer(
+        'Обложка маршрута !'
+    )
     image = FSInputFile(path='media/' + str(route.image))
     await message.answer_photo(image)
-    # await state.update_data(route=message.text.capitalize())
+
+    await asyncio.sleep(3)
+
+    await message.answer(
+        'Карта маршрута !'
+    )
+    image = FSInputFile(path='media/' + str(route.route_map))
+    await message.answer_photo(image)
+
     await state.update_data(route=route_id)
     await state.update_data(exhibit_number=0)
+    await state.update_data(count_exhibits=count_exhibits)
 
     exhibit = await get_exhibit(route_id, 0)
     await state.update_data(route_obj=route)
