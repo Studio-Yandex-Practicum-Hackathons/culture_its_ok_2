@@ -87,7 +87,18 @@ async def set_route(state: FSMContext, message: Message):
         await state.set_state(Route.transition)
 
 
-async def get_tag_from_description(description):
+async def get_tag_from_description(description: str) -> str:
+    """
+    Получение хеш-тега из описания и поиск первой ссылки в google по заданному
+    тегу.
+    Работает через связку Selenium + BeautifulSoup4
+    1. Через регулярку ищем в полученном на вход тексте хеш-тег
+    2. С помощью Selenium эмулируем закрытое окно браузера для прогрузки
+    JS, чтобы получить HTML
+    3. С помощью BeautifulSoup4 парсим HTML для поиска первой ссылки в поиске
+    гугла по-заданному хеш-тегу
+    4. Возвращаем ссылку
+    """
     text_url = urllib.parse.quote(re.search('#\w+', description).group())
     options = webdriver.EdgeOptions()
     options.add_argument('--headless')
