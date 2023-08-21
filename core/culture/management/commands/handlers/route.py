@@ -24,7 +24,7 @@ from ..functions import (get_exhibit_from_state,
                          get_id_from_state, get_route_from_state,
                          set_route, speech_to_text_conversion)
 from ..keyboards import (
-    KEYBOARD_YES_NO, keyboard_yes, keyboard_routes,
+    KEYBOARD_YES_NO, keyboard_yes,
     keyboard_for_send_review, make_vertical_keyboard,
     keyboard_for_transition, make_row_keyboard
 )
@@ -382,14 +382,33 @@ async def transition(message: Message, state: FSMContext) -> None:
         reply_markup=keyboard_for_transition())
 
 
-@route_router.message(Route.quiz)
+@route_router.message(Route.quiz,  F.text == 'Да')
+async def return_route(message: Message, state: FSMContext) -> None:
+    '''вернутся на марщрут'''
+    await state.set_state(None)
+    await command_routes(message, state)
+
+
+@route_router.message(Route.quiz,  F.text == 'Нет')
+async def leave_route(message: Message, state: FSMContext) -> None:
+    '''Уход с маршрута'''
+    await message.answer(
+        'Команда фестиваля прощается с Вами! Всего наилучшего!',
+        reply_markup=ReplyKeyboardRemove()
+    )
+    await state.clear()
+
+
+@route_router.message(Route.quiz, F.text == 'Конец')
 async def end_route(message: Message, state: FSMContext) -> None:
     '''Конец маршрута'''
     await message.answer(ms.RESPONSE_MESSAGE)
-    await state.set_state(None)
     await message.answer(
         ms.RETURN_TO_ROUTES,
-        reply_markup=keyboard_routes()
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard=KEYBOARD_YES_NO,
+            resize_keyboard=True,
+        )
     )
 
 
