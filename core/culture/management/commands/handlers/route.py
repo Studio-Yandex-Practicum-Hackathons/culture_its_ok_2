@@ -113,6 +113,23 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
         await state.set_state(Route.exhibit)
 
 
+@route_router.message(Route.route_start)
+async def route_info_start(message: Message, state: FSMContext):
+    data = await state.get_data()
+    route = data.get('route_obj')
+    await message.answer(
+        ms.EXHIBIT_SELECTION.format(route.address)
+    )
+    await message.answer(
+        ms.START_ROUTE_MESSAGE,
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard=KEYBOARD_YES_NO,
+            resize_keyboard=True,
+        )
+    )
+    await state.set_state(Route.route)
+
+
 @route_router.message(Route.route)
 async def route_info(message: Message, state: FSMContext) -> None:
     """Начало пути """
@@ -161,6 +178,10 @@ async def route_info(message: Message, state: FSMContext) -> None:
 
     await asyncio.sleep(const.SLEEP_3)
 
+    if route.text_route_start != '':
+        await message.answer(f'{route.text_route_start}')
+        await state.set_state(Route.route_start)
+        return
     await message.answer(
         ms.EXHIBIT_SELECTION.format(route.address)
     )
@@ -171,8 +192,6 @@ async def route_info(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         )
     )
-    print(await state.get_data())
-    await state.set_state(Route.route)
 
 
 @route_router.message(Route.podvodka,)
@@ -190,11 +209,12 @@ async def refleksia_no(message: Message, state: FSMContext) -> None:
     await state.update_data(answer_to_reflection=message.text)
     if exhibit.reflection_negative != '':
         await message.answer(
-            f'{exhibit.reflection_negative}'
+            f'{exhibit.reflection_negative}',
+            parse_mode="html"
         )
     else:
         await message.answer(
-            "ТУТ ОТР РЕФЛЕКСИЯ",
+            "В бд нет отр рефлексии?",
         )
     await message.answer(
         ms.REVIEW_ASK,
@@ -210,6 +230,7 @@ async def refleksia_yes(message: Message, state: FSMContext) -> None:
     await state.update_data(answer_to_reflection=message.text)
     await message.answer(
         f"{exhibit.reflection_positive}",
+        parse_mode="html"
     )
     await message.answer(
         ms.REVIEW_ASK,
@@ -236,7 +257,8 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
 
     await message.answer(
         f"{exhibit.description}",
-        reply_markup=ReplyKeyboardRemove()
+        reply_markup=ReplyKeyboardRemove(),
+        parse_mode="html"
     )
 
     image = FSInputFile(path=const.PATH_MEDIA + str(exhibit.image))

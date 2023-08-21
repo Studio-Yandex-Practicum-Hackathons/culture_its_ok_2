@@ -6,6 +6,7 @@ from aiogram.fsm.state import State, StatesGroup
 class Route(StatesGroup):
     """Класс состояний для марштура."""
     route = State()
+    route_start = State()
     exhibit = State()
     podvodka = State()
     reflaksia = State()
