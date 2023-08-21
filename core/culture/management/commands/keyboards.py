@@ -7,6 +7,8 @@ from aiogram.types import (BotCommand, BotCommandScopeDefault,
 
 MAIN_COMMANDS = ["/routes", '/help']
 
+HOBBY = ["искусство", "стрит-арт", "фотография", "прогулка", "спорт", "другое"]
+
 KEYBOARD_START = [[KeyboardButton(text="routes"), ]]
 KEYBOARD_YES_NO = [[KeyboardButton(text="Да"), KeyboardButton(text="Нет"), ]]
 REVIEW_KEYBOARD = [[
