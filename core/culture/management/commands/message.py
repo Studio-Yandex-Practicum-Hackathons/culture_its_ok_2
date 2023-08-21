@@ -63,7 +63,12 @@ INFO_NEXT_OBJECT = '''
 {}
 Как добраться: {}
 '''
-RESPONSE_MESSAGE = 'Команда будет рада отклику\nСсылка на форму'
+RESPONSE_MESSAGE = (
+    'Команда будет рада отклику!\n'
+    'Ссылка на форму:\n'
+    'https://docs.google.com/forms/d/1y7fpbHW'
+    'QTcNOtO9mWffYHSbqsdyyZSZnKVn4oXLW6Gw/edit'
+)
 RETURN_TO_ROUTES = 'Вернутся на выбор маршрута'
 EMPTY_REVIEW = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
 USE_TEXT_REVIEW = '''

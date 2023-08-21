@@ -1,6 +1,13 @@
 """Файл с основными функциями, которые нужны для чистоты кода."""
 import io
+import re
+import urllib.parse
 
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.edge.service import Service
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
+from selenium.webdriver.common.by import By
 import soundfile as sf
 import speech_recognition as speech_r
 from aiogram.fsm.context import FSMContext
@@ -78,3 +85,20 @@ async def set_route(state: FSMContext, message: Message):
         exhibit = await get_exhibit(route_id, exhibit_number)
         await state.update_data(exhibit=exhibit)
         await state.set_state(Route.transition)
+
+
+async def get_tag_from_description(description):
+    text_url = urllib.parse.quote(re.search('#\w+', description).group())
+    options = webdriver.EdgeOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Edge(
+        service=Service(
+            executable_path=EdgeChromiumDriverManager().install()
+        ),
+        options=options
+    )
+    driver.get(f'https://www.google.com/search?q={text_url}')
+    return BeautifulSoup(
+        driver.find_element(By.ID, 'search').get_attribute('outerHTML'),
+        'lxml'
+    ).find_all('div', attrs={'class': 'yuRUbf'})[0].find('a')['href']
