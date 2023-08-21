@@ -198,9 +198,8 @@ async def refleksia_no(message: Message, state: FSMContext) -> None:
         )
     await message.answer(
         ms.REVIEW_ASK,
-        reply_markup=ReplyKeyboardRemove()
+        reply_markup=keyboard_for_send_review()
     )
-    await state.set_state(Route.review)
 
 
 # пока что только любой текст кроме слова нет
@@ -214,9 +213,8 @@ async def refleksia_yes(message: Message, state: FSMContext) -> None:
     )
     await message.answer(
         ms.REVIEW_ASK,
-        reply_markup=ReplyKeyboardRemove()
+        reply_markup=keyboard_for_send_review()
     )
-    await state.set_state(Route.review)
 
 
 @route_router.message(
@@ -259,9 +257,8 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
         await state.update_data(answer_to_reflection=const.NOT_REFLAKSIA)
         await message.answer(
             ms.REVIEW_ASK,
-            reply_markup=ReplyKeyboardRemove()
+            reply_markup=keyboard_for_send_review()
         )
-        await state.set_state(Route.review)
 
 
 @route_router.message(Route.review, F.text | F.voice)
