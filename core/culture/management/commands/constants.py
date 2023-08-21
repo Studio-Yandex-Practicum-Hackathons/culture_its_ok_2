@@ -1,0 +1,9 @@
+ROUTE = 'Маршрут '
+NO = 'Нет'
+YES = 'Да'
+NOT_PODVODKA = 'Нет подводки'
+PATH_MEDIA = 'media/'
+ANSWERS_TO_CONTINUE = {"Отлично! Идем дальше", "Yes", "Да", "Отлично начинаем"}
+NOT_REFLAKSIA = 'Нет рефлексии'
+SLEEP_3 = 3
+SLEEP_10 = 10
