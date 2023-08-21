@@ -22,7 +22,7 @@ async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
 async def get_exhibit_from_state(state: FSMContext):
     """Полученние экспоната из state."""
     user_data = await state.get_data()
-    return user_data.get('exhibit_obj')
+    return user_data.get('exhibit')
 
 
 async def get_route_from_state(state: FSMContext):
@@ -76,5 +76,5 @@ async def set_route(state: FSMContext, message: Message):
             reply_markup=make_row_keyboard(['Отлично идем дальше']),
         )
         exhibit = await get_exhibit(route_id, exhibit_number)
-        await state.update_data(exhibit_obj=exhibit)
+        await state.update_data(exhibit=exhibit)
         await state.set_state(Route.transition)

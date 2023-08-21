@@ -14,7 +14,7 @@ meetings_router = Router()
 async def get_name(message: Message, state: FSMContext) -> None:
     """Получает имя пользователя"""
     if await check_name(message.text):
-        await state.update_data(name=message.text)
+        await state.update_data(username=message.text)
         await message.answer(ms.AGE_MESSAGE)
         await state.set_state(User.age)
     else:
@@ -26,7 +26,7 @@ async def get_name(message: Message, state: FSMContext) -> None:
 async def get_age(message: Message, state: FSMContext) -> None:
     """Получает возраст пользователя"""
     if await check_age(message.text):
-        await state.update_data(age=message.text)
+        await state.update_data(userage=int(message.text))
         await message.answer(ms.HOBBY_MESSAGE)
         await state.set_state(User.hobby)
     else:
@@ -37,9 +37,9 @@ async def get_age(message: Message, state: FSMContext) -> None:
 @meetings_router.message(User.hobby)
 async def get_hobby(message: Message, state: FSMContext) -> None:
     """Получает хобби пользователя"""
-    await state.update_data(hobby=message.text)
+    await state.update_data(userhobby=message.text)
     data = await state.get_data()
-    name = data.get('name')
+    name = data.get('username')
     await message.answer(
         ms.END_ACQUAINTANCE.format(name),
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)

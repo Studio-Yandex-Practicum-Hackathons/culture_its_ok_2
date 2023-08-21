@@ -40,17 +40,13 @@ async def get_exhibit(route_id: str, exhibit_number: int):
 async def save_review(text: str, state: FSMContext):
     '''Запись отзыва в БД'''
     data = await state.get_data()
-    exhibit = await get_exhibit(
-        data.get('route'),
-        data.get('exhibit_number')
-    )
+    data['text'] = text
+    data.pop('route')
+    data.pop('exhibit_number')
+    data.pop('count_exhibits')
+    data.pop('route_obj')
     await Review.objects.acreate(
-        text=text, exhibit=exhibit,
-        username=data.get('name'),
-        userage=data.get('userage'),
-        userhobby=data.get('hobby'),
-        answer_to_message_before_description=data.get('podvodka'),
-        answer_to_reflection=data.get('refleksia')
+        **data
     )
 
 

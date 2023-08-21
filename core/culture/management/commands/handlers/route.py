@@ -23,8 +23,11 @@ from ..exceptions import FeedbackError
 from ..functions import (get_exhibit_from_state,
                          get_id_from_state, get_route_from_state,
                          set_route, speech_to_text_conversion)
-from ..keyboards import (KEYBOARD_YES_NO, keyboard_yes, keyboard_routes,
-                        keyboard_for_send_review, make_row_keyboard, make_vertical_keyboard)
+from ..keyboards import (
+    KEYBOARD_YES_NO, keyboard_yes, keyboard_routes,
+    keyboard_for_send_review, make_vertical_keyboard,
+    keyboard_for_transition, make_row_keyboard
+)
 from ..utils import Route, Block
 from ..validators import rewiew_validator
 
@@ -61,7 +64,7 @@ async def start_route_number(message: Message, state: FSMContext) -> None:
 
     route_id, exhibit_number = await get_id_from_state(state)
     exhibit = await get_exhibit(route_id, exhibit_number)
-    await state.update_data(exhibit_obj=exhibit)
+    await state.update_data(exhibit=exhibit)
 
     await message.answer(
         ms.ADDRESS_SELECTED_OBJECT.format(message.text, exhibit.address),
@@ -96,8 +99,7 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
     '''Старт медитации'''
     await message.answer(
         ms.START_MEDITATION,
-        # reply_markup=make_row_keyboard(['Отлично начинаем'])
-        reply_markup=ReplyKeyboardRemove()
+        reply_markup=make_row_keyboard(['Отлично начинаем'])
     )
     exhibit = await get_exhibit_from_state(state)
     if exhibit.message_before_description != '':
@@ -106,7 +108,8 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
         )
         await state.set_state(Route.podvodka)
     else:
-        await state.update_data(podvodka=const.NOT_PODVODKA)
+        await state.update_data(
+            answer_to_message_before_description=const.NOT_PODVODKA)
         await state.set_state(Route.exhibit)
 
 
@@ -154,7 +157,7 @@ async def route_info(message: Message, state: FSMContext) -> None:
 
     exhibit = await get_exhibit(route_id, 0)
     await state.update_data(route_obj=route)
-    await state.update_data(exhibit_obj=exhibit)
+    await state.update_data(exhibit=exhibit)
 
     await asyncio.sleep(const.SLEEP_3)
 
@@ -168,13 +171,15 @@ async def route_info(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         )
     )
+    print(await state.get_data())
     await state.set_state(Route.route)
 
 
 @route_router.message(Route.podvodka,)
 async def podvodka(message: Message, state: FSMContext) -> None:
     """Запись ответа подводки в state."""
-    await state.update_data(podvodka=message.text)
+    await state.update_data(
+        answer_to_message_before_description=message.text)
     await exhibit_info(message, state)
 
 
@@ -182,7 +187,7 @@ async def podvodka(message: Message, state: FSMContext) -> None:
 async def refleksia_no(message: Message, state: FSMContext) -> None:
     '''Отр рефлексия'''
     exhibit = await get_exhibit_from_state(state)
-    await state.update_data(refleksia=message.text)
+    await state.update_data(answer_to_reflection=message.text)
     if exhibit.reflection_negative != '':
         await message.answer(
             f'{exhibit.reflection_negative}'
@@ -203,7 +208,7 @@ async def refleksia_no(message: Message, state: FSMContext) -> None:
 async def refleksia_yes(message: Message, state: FSMContext) -> None:
     '''Положительная рефлексия'''
     exhibit = await get_exhibit_from_state(state)
-    await state.update_data(refleksia=message.text)
+    await state.update_data(answer_to_reflection=message.text)
     await message.answer(
         f"{exhibit.reflection_positive}",
     )
@@ -251,7 +256,7 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
         )
         await state.set_state(Route.reflaksia)
     else:
-        await state.update_data(refleksia=const.NOT_REFLAKSIA)
+        await state.update_data(answer_to_reflection=const.NOT_REFLAKSIA)
         await message.answer(
             ms.REVIEW_ASK,
             reply_markup=ReplyKeyboardRemove()
@@ -280,7 +285,9 @@ async def review(message: Message, state: FSMContext) -> None:
             except RequestError:
                 answer = ms.USE_TEXT_REVIEW
         else:
-            answer = ms.SHORT_VOICE_REVIEW.format(MAXIMUM_DURATION_VOICE_MESSAGE)
+            answer = ms.SHORT_VOICE_REVIEW.format(
+                MAXIMUM_DURATION_VOICE_MESSAGE
+            )
     else:
         text = message.text
     if not answer:
@@ -314,39 +321,46 @@ async def skip_send_review(callback: types.CallbackQuery, state: FSMContext):
     await set_route(state, callback.message)
 
 
-# этот код будет работать только если ботом пользуется только один человек,
-# надо как-то связать target c активным пользовелем
+@route_router.callback_query(Route.transition, F.data == 'in_place')
+async def in_place(callback: types.CallbackQuery, state: FSMContext):
+    """Кнопка "На месте", переход на некст объект."""
+    await callback.answer()
+    await callback.message.edit_reply_markup()
+    exhibit_obj = await get_exhibit_from_state(state)
+    if exhibit_obj.message_before_description != '':
+        await callback.message.answer(
+            f"{exhibit_obj.message_before_description}",
+            reply_markup=ReplyKeyboardRemove()
+        )
+        await state.set_state(Route.podvodka)
+    else:
+        await state.update_data(
+            answer_to_message_before_description=const.NOT_PODVODKA)
+        await exhibit_info(callback.message, state)
+
+
+@route_router.callback_query(Route.transition, F.data == 'route')
+async def show_route(callback: types.CallbackQuery, state: FSMContext):
+    """Кнопка "Маршрут", что-то делает ?."""
+    await callback.answer()
+    await callback.message.edit_reply_markup()
+    await callback.message.answer('Тут инфа про следющий экспонат??')
+    # await set_route(state, callback.message)
+
+
 @route_router.message(Route.transition, F.text)
 async def transition(message: Message, state: FSMContext) -> None:
-    '''Переход'''
-    global target
+    """Переход на следющий объект"""
     exhibit_obj = await get_exhibit_from_state(state)
     await message.answer(
-        ms.CHECH_NEXT_PRESENCE
+        ms.INFO_NEXT_OBJECT.format(
+            exhibit_obj.address, exhibit_obj.how_to_pass
+        ),
+        reply_markup=ReplyKeyboardRemove()
     )
-    while True:
-        if not target:
-            break
-        if message.text == const.YES and target:
-            target = False
-            if exhibit_obj.message_before_description != '':
-                await message.answer(
-                    f"{exhibit_obj.message_before_description}",
-                    reply_markup=ReplyKeyboardRemove()
-                )
-                # не много не так работает , но работает
-                await state.set_state(Route.podvodka)
-            else:
-                await state.update_data(podvodka=const.NOT_PODVODKA)
-                await exhibit_info(message, state)
-            break
-        if message.text != const.YES and target:
-            await message.answer(
-                ms.INFO_NEXT_OBJECT.format(exhibit_obj.address, exhibit_obj.how_to_pass),
-                reply_markup=keyboard_yes()
-            )
-            await asyncio.sleep(const.SLEEP_10)
-            continue
+    await message.answer(
+        text='Когда будешь на месте сообщи мне',
+        reply_markup=keyboard_for_transition())
 
 
 @route_router.message(Route.quiz)
