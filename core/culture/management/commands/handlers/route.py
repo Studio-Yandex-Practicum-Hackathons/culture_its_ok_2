@@ -16,14 +16,15 @@ from speech_recognition.exceptions import RequestError, UnknownValueError
 
 from .. import message as ms
 from ..config import logger, MAXIMUM_DURATION_VOICE_MESSAGE
+from .. import constants as const
 from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
                     get_routes_id, save_review)
 from ..exceptions import FeedbackError
 from ..functions import (get_exhibit_from_state,
                          get_id_from_state, get_route_from_state,
                          set_route, speech_to_text_conversion)
-from ..keyboards import (KEYBOARD_YES_NO, keyboard_for_send_review,
-                         make_row_keyboard, make_vertical_keyboard)
+from ..keyboards import (KEYBOARD_YES_NO, keyboard_yes, keyboard_routes,
+                        keyboard_for_send_review, make_row_keyboard, make_vertical_keyboard)
 from ..utils import Route, Block
 from ..validators import rewiew_validator
 
@@ -37,7 +38,7 @@ async def command_routes(message: Message, state: FSMContext) -> None:
     """Команда /routes . Предлагает выбрать маршрут."""
     keybord = []
     for route in await get_routes_id():
-        keybord.append('Маршрут ' + str(route))
+        keybord.append(const.ROUTE + str(route))
     await message.reply(
          text=ms.CHOOSE_ROUTE_MESSAGE,
          reply_markup=make_vertical_keyboard(keybord),
@@ -52,8 +53,7 @@ async def start_route_number(message: Message, state: FSMContext) -> None:
     count_exhibit = data.get('count_exhibits')
     if int(message.text) > count_exhibit:
         await message.answer(
-            f'Вы ввели число, которое превышает {count_exhibit} \n'
-            f'Пожалуйста повторите попытку или выберете Да/Нет',
+            ms.ROUTE_SELECTION_ERROR.format(count_exhibit)
         )
         return
     number = int(message.text) - 1
@@ -64,35 +64,38 @@ async def start_route_number(message: Message, state: FSMContext) -> None:
     await state.update_data(exhibit_obj=exhibit)
 
     await message.answer(
-        f'Вы выбрали номер объекта={message.text} \n'
-        f'Обьект расположен по адресу: {exhibit.address}',
+        ms.ADDRESS_SELECTED_OBJECT.format(message.text, exhibit.address),
         reply_markup=ReplyKeyboardRemove()
     )
 
     await message.answer(
-        'Нажмите Да, когда будете возле экспоната',
-        reply_markup=make_row_keyboard(['Да']),
+        ms.CHECK_PRESENCE,
+        reply_markup=keyboard_yes(),
         )
 
     await state.set_state(Route.exhibit)
 
 
-@route_router.message(Route.route,  F.text == "Нет")
+@route_router.message(Route.route,  F.text == const.NO)
 async def start_route_no(message: Message, state: FSMContext) -> None:
     '''Поиск маршрута'''
     route = await get_route_from_state(state)
     await message.answer(
-        f'Медитация начинается по адресу {route.address}\n'
-        'Вы стоите в начале?',
-        reply_markup=make_row_keyboard(['Да']),
+        ms.ROUTE_MAP
+    )
+    image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
+    await message.answer_photo(image)
+    await message.answer(
+        ms.CHECK_START_MEDITATION.format(route.address),
+        reply_markup=keyboard_yes(),
     )
 
 
-@route_router.message(Route.route,  F.text == 'Да')
+@route_router.message(Route.route,  F.text == const.YES)
 async def start_route_yes(message: Message, state: FSMContext) -> None:
     '''Старт медитации'''
     await message.answer(
-        'Отлично начнем нашу медитацию',
+        ms.START_MEDITATION,
         # reply_markup=make_row_keyboard(['Отлично начинаем'])
         reply_markup=ReplyKeyboardRemove()
     )
@@ -103,7 +106,7 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
         )
         await state.set_state(Route.podvodka)
     else:
-        await state.update_data(podvodka='Нет подводки')
+        await state.update_data(podvodka=const.NOT_PODVODKA)
         await state.set_state(Route.exhibit)
 
 
@@ -118,32 +121,31 @@ async def route_info(message: Message, state: FSMContext) -> None:
     except ObjectDoesNotExist:
         logger.error('Пользователь ввел название маршрута, которого нет в бд.')
         await message.answer(
-            'Выбери маршрут из тех, которые представлены на клавиатуре'
+            ms.ROUTE_SELECTION_ERROR
         )
         return
     await message.answer(
-        f"Название маршрута: {route.name}\n"
-        f"{route.description}\n",
+        ms.ROUTE_DESCRIPTION.format(route.name, route.description),
         reply_markup=ReplyKeyboardRemove()
     )
-    await asyncio.sleep(3)
+    await asyncio.sleep(const.SLEEP_3)
     count_exhibits = len(await get_all_exhibits_by_route(route))
     await message.answer(
-        f'Данный маршрут состоит из {count_exhibits} экспонатов!'
+        ms.NUMBER_EXHIBITS_IN_ROUTE.format(count_exhibits)
     )
 
     await message.answer(
-        'Обложка маршрута !'
+        ms.ROUTE_COVER
     )
-    image = FSInputFile(path='media/' + str(route.image))
+    image = FSInputFile(path=const.PATH_MEDIA + str(route.image))
     await message.answer_photo(image)
 
-    await asyncio.sleep(3)
+    await asyncio.sleep(const.SLEEP_3)
 
     await message.answer(
-        'Карта маршрута !'
+        ms.ROUTE_MAP
     )
-    image = FSInputFile(path='media/' + str(route.route_map))
+    image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
     await message.answer_photo(image)
 
     await state.update_data(route=route_id)
@@ -154,11 +156,10 @@ async def route_info(message: Message, state: FSMContext) -> None:
     await state.update_data(route_obj=route)
     await state.update_data(exhibit_obj=exhibit)
 
-    await asyncio.sleep(3)
+    await asyncio.sleep(const.SLEEP_3)
 
     await message.answer(
-        f'Медитация начинается по адресу {route.address}\n'
-        'Если хотите выбрать номер обекта напишите его номер'
+        ms.EXHIBIT_SELECTION.format(route.address)
     )
     await message.answer(
         ms.START_ROUTE_MESSAGE,
@@ -177,7 +178,7 @@ async def podvodka(message: Message, state: FSMContext) -> None:
     await exhibit_info(message, state)
 
 
-@route_router.message(Route.reflaksia,  F.text == 'Нет')
+@route_router.message(Route.reflaksia,  F.text == const.NO)
 async def refleksia_no(message: Message, state: FSMContext) -> None:
     '''Отр рефлексия'''
     exhibit = await get_exhibit_from_state(state)
@@ -215,7 +216,7 @@ async def refleksia_yes(message: Message, state: FSMContext) -> None:
 
 @route_router.message(
         Route.exhibit,
-        F.text.in_({"Отлично! Идем дальше", "Yes", "Да", "Отлично начинаем"})
+        F.text.in_(const.ANSWERS_TO_CONTINUE)
 )
 async def exhibit_info(message: Message, state: FSMContext) -> None:
     """
@@ -235,10 +236,10 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
         reply_markup=ReplyKeyboardRemove()
     )
 
-    image = FSInputFile(path='media/' + str(exhibit.image))
+    image = FSInputFile(path=const.PATH_MEDIA + str(exhibit.image))
     await message.answer_photo(image)
 
-    await asyncio.sleep(10)
+    await asyncio.sleep(const.SLEEP_10)
 
     if exhibit.reflection != '':
         await message.answer(
@@ -250,7 +251,7 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
         )
         await state.set_state(Route.reflaksia)
     else:
-        await state.update_data(refleksia='Нет рефлексии')
+        await state.update_data(refleksia=const.NOT_REFLAKSIA)
         await message.answer(
             ms.REVIEW_ASK,
             reply_markup=ReplyKeyboardRemove()
@@ -275,13 +276,11 @@ async def review(message: Message, state: FSMContext) -> None:
             try:
                 text = await speech_to_text_conversion(filename=voice_file)
             except UnknownValueError:
-                answer = 'Пустой отзыв. Возможно вы говорили слишком тихо.'
+                answer = ms.EMPTY_REVIEW
             except RequestError:
-                answer = ('В данный момент я не могу понимать голосовые '
-                          'сообщения. Используй, пожалуйста, текст.')
+                answer = ms.USE_TEXT_REVIEW
         else:
-            answer = (f'Голосовое сообщение должно быть менее '
-                      f'{MAXIMUM_DURATION_VOICE_MESSAGE}')
+            answer = ms.SHORT_VOICE_REVIEW.format(MAXIMUM_DURATION_VOICE_MESSAGE)
     else:
         text = message.text
     if not answer:
@@ -296,7 +295,7 @@ async def review(message: Message, state: FSMContext) -> None:
         await message.answer(text=answer)
         await set_route(state, message)
     else:
-        await message.answer(text=f'{answer}\nПопробуйте снова.',
+        await message.answer(text=ms.REVIEW_ERROR.format(answer),
                              reply_markup=keyboard_for_send_review())
 
 
@@ -304,7 +303,7 @@ async def review(message: Message, state: FSMContext) -> None:
 async def resend_review(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     await callback.message.edit_reply_markup()
-    await callback.message.answer('Напишите ваше мнение')
+    await callback.message.answer(ms.WRITE_YOUR_OPINION)
     await state.set_state(Route.review)
 
 
@@ -323,12 +322,12 @@ async def transition(message: Message, state: FSMContext) -> None:
     global target
     exhibit_obj = await get_exhibit_from_state(state)
     await message.answer(
-        'Нажмите Да, когда дойдете до следущего экспонат.'
+        ms.CHECH_NEXT_PRESENCE
     )
     while True:
         if not target:
             break
-        if message.text == 'Да' and target:
+        if message.text == const.YES and target:
             target = False
             if exhibit_obj.message_before_description != '':
                 await message.answer(
@@ -338,28 +337,26 @@ async def transition(message: Message, state: FSMContext) -> None:
                 # не много не так работает , но работает
                 await state.set_state(Route.podvodka)
             else:
-                await state.update_data(podvodka='Нет подводки')
+                await state.update_data(podvodka=const.NOT_PODVODKA)
                 await exhibit_info(message, state)
             break
-        if message.text != 'Да' and target:
+        if message.text != const.YES and target:
             await message.answer(
-                'Следующий объект расположен по адресу: '
-                f'{exhibit_obj.address}\n'
-                f'Как добраться: {exhibit_obj.how_to_pass}',
-                reply_markup=make_row_keyboard(['Да'])
+                ms.INFO_NEXT_OBJECT.format(exhibit_obj.address, exhibit_obj.how_to_pass),
+                reply_markup=keyboard_yes()
             )
-            await asyncio.sleep(10)
+            await asyncio.sleep(const.SLEEP_10)
             continue
 
 
 @route_router.message(Route.quiz)
 async def end_route(message: Message, state: FSMContext) -> None:
     '''Конец маршрута'''
-    await message.answer('Команда будет рада отклику\nСсылка на форму')
+    await message.answer(ms.RESPONSE_MESSAGE)
     await state.set_state(None)
     await message.answer(
-        'Вернутся на выбор маршрута',
-        reply_markup=make_row_keyboard(['/routes'])
+        ms.RETURN_TO_ROUTES,
+        reply_markup=keyboard_routes()
     )
 
 

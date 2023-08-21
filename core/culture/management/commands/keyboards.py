@@ -51,6 +51,15 @@ def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
     row = [KeyboardButton(text=item) for item in items]
     return ReplyKeyboardMarkup(keyboard=[row], resize_keyboard=True)
 
+def keyboard_yes() -> ReplyKeyboardMarkup:
+    '''Создаёт реплай-клавиатуру с кнопкой Да'''
+    yes = KeyboardButton(text="Да")
+    return ReplyKeyboardMarkup(keyboard=[[yes]], resize_keyboard=True)
+
+def keyboard_routes() -> ReplyKeyboardMarkup:
+    '''Создаёт реплай-клавиатуру с кнопкой /routes'''
+    yes = KeyboardButton(text='/routes')
+    return ReplyKeyboardMarkup(keyboard=[[yes]], resize_keyboard=True)
 
 def make_vertical_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
     """
