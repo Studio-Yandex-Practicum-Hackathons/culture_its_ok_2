@@ -192,6 +192,7 @@ async def route_info(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         )
     )
+    await state.set_state(Route.route)
 
 
 @route_router.message(Route.podvodka,)
