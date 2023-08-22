@@ -2,6 +2,7 @@ import asyncio
 
 import emoji
 import io
+import random
 
 from aiogram import F, Router, types
 from aiogram.enums.parse_mode import ParseMode
@@ -252,7 +253,8 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
 
     # надо научится отправлять стикер пользователю (из набора рандомный)
 
-    await message.reply(emoji.emojize(':thumbs_up:', language='alias'),)
+    # await message.reply(emoji.emojize(':thumbs_up:', language='alias'),)
+    await message.reply(random.choice(ms.EMOJI_LIST))
 
     exhibit = await get_exhibit_from_state(state)
 
