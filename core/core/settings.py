@@ -26,6 +26,7 @@ INSTALLED_APPS = [
 
     'api.apps.ApiConfig',
     'culture.apps.CultureConfig',
+    'bot.apps.BotConfig'
 ]
 
 MIDDLEWARE = [

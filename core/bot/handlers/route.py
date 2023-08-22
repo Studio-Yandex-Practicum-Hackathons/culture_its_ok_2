@@ -2,6 +2,7 @@ import asyncio
 
 import emoji
 import io
+import random
 
 from aiogram import F, Router, types
 from aiogram.enums.parse_mode import ParseMode
@@ -192,6 +193,7 @@ async def route_info(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         )
     )
+    await state.set_state(Route.route)
 
 
 @route_router.message(Route.podvodka,)
@@ -251,7 +253,8 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
 
     # надо научится отправлять стикер пользователю (из набора рандомный)
 
-    await message.reply(emoji.emojize(':thumbs_up:', language='alias'),)
+    # await message.reply(emoji.emojize(':thumbs_up:', language='alias'),)
+    await message.reply(random.choice(ms.EMOJI_LIST))
 
     exhibit = await get_exhibit_from_state(state)
 
@@ -362,8 +365,14 @@ async def in_place(callback: types.CallbackQuery, state: FSMContext):
 async def show_route(callback: types.CallbackQuery, state: FSMContext):
     """Кнопка "Маршрут", что-то делает ?."""
     await callback.answer()
-    await callback.message.edit_reply_markup()
-    await callback.message.answer('Тут инфа про следющий экспонат??')
+    # await callback.message.edit_reply_markup()
+    data = await state.get_data()
+    route = data.get('route_obj')
+    image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
+    await callback.message.answer(
+        'Вот карта маршрута, надесюсь она вам поможет'
+    )
+    await callback.message.answer_photo(image)
     # await set_route(state, callback.message)
 
 
