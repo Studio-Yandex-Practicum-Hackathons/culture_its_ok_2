@@ -365,8 +365,14 @@ async def in_place(callback: types.CallbackQuery, state: FSMContext):
 async def show_route(callback: types.CallbackQuery, state: FSMContext):
     """Кнопка "Маршрут", что-то делает ?."""
     await callback.answer()
-    await callback.message.edit_reply_markup()
-    await callback.message.answer('Тут инфа про следющий экспонат??')
+    # await callback.message.edit_reply_markup()
+    data = await state.get_data()
+    route = data.get('route_obj')
+    image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
+    await callback.message.answer(
+        'Вот карта маршрута, надесюсь она вам поможет'
+    )
+    await callback.message.answer_photo(image)
     # await set_route(state, callback.message)
 
 
