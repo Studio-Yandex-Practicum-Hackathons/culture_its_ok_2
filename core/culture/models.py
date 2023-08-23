@@ -1,4 +1,4 @@
-from ckeditor.fields import RichTextField
+# from ckeditor.fields import RichTextField
 from django.db import models
 from PIL import Image
 
