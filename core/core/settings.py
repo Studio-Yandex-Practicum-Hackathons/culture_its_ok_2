@@ -10,7 +10,6 @@ FONTS_DIR = os.path.join(BASE_DIR, "fonts")
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
-# DEBUG = True
 DEBUG = False
 ALLOWED_HOSTS = ['*']
 
@@ -59,13 +58,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 
 DATABASES = {
     'default': {

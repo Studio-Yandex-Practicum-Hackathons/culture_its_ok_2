@@ -105,7 +105,7 @@ class Exhibit(PreBase):
         return f'Объект {self.pk}: {self.name}'
 
 
-class RouteExhibit (models.Model):
+class RouteExhibit(models.Model):
     route = models.ForeignKey(
         Route,
         on_delete=models.CASCADE,
