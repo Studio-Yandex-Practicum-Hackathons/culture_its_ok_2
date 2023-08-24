@@ -46,7 +46,7 @@ async def help_info(message: Message) -> None:
 
 @main_router.message(Command("cancel"))
 @main_router.message(F.text.casefold() == "отмена")
-async def cmd_cancel(message: Message, state: FSMContext):
+async def cmd_cancel(message: Message, state: FSMContext) -> None:
     await state.clear()
     await message.answer(
         text="Действие отменено",
