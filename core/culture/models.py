@@ -1,4 +1,4 @@
-# from ckeditor.fields import RichTextField
+from ckeditor.fields import RichTextField
 from django.db import models
 from PIL import Image
 
@@ -11,7 +11,7 @@ class PreBase(models.Model):
         verbose_name="Название",
         default="Без названия",
     )
-    description = models.TextField(
+    description = RichTextField(
         verbose_name="Описание",
         default="Без описания",
     )
@@ -19,7 +19,7 @@ class PreBase(models.Model):
         upload_to="pictures",
         verbose_name="Фото",
     )
-    address = models.TextField(verbose_name="Точный адрес")
+    address = RichTextField(verbose_name="Точный адрес")
 
     def save(self, *args, **kwargs):
         """Изменяется раширение изображения?"""
@@ -48,7 +48,7 @@ class Route(PreBase):
         upload_to="pictures",
         verbose_name="Карта маршрута",
     )
-    text_route_start = models.TextField(
+    text_route_start = RichTextField(
         verbose_name="Текст к месту начала маршрута",
         blank=True,
     )
@@ -75,27 +75,27 @@ class Exhibit(PreBase):
         verbose_name="Автор",
         default="Не указан",
     )
-    how_to_pass = models.TextField(
+    how_to_pass = RichTextField(
         verbose_name="Путь до объекта",
         blank=True,
     )
-    message_before_description = models.TextField(
+    message_before_description = RichTextField(
         verbose_name="Подводка",
         blank=True,
     )
-    reflection = models.TextField(
+    reflection = RichTextField(
         verbose_name="Рефлексии",
         blank=True,
     )
-    reflection_positive = models.TextField(
+    reflection_positive = RichTextField(
         verbose_name="Сообщение после положительного ответа пользователя",
         blank=True,
     )
-    reflection_negative = models.TextField(
+    reflection_negative = RichTextField(
         verbose_name="Сообщение после отрицательного ответа пользователя",
         blank=True,
     )
-    transfer_message = models.TextField(
+    transfer_message = RichTextField(
         verbose_name="Сообщение для перехода к следующему объекту",
         blank=True,
     )

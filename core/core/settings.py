@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "ckeditor",
     "api.apps.ApiConfig",
     "culture.apps.CultureConfig",
     "bot.apps.BotConfig",
@@ -90,3 +91,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+CKEDITOR_CONFIGS = {
+    "default": {
+        "autoParagraph": False,
+        "entities": False,
+        "fillEmptyBlocks": False,
+        "toolbar": "Custom",
+        "height": 300,
+        "width": 800,
+        "toolbar_Custom": [
+            ["Bold", "Italic", "Underline"],
+        ],
+    },
+}
