@@ -1,5 +1,5 @@
-ROUTE = 'Маршрут '
-NO = 'Нет'
+ROUTE = "Маршрут "
+NO = "Нет"
 YES = 'Да'
 NOT_PODVODKA = 'Нет подводки'
 PATH_MEDIA = 'media/'

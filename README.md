@@ -41,5 +41,7 @@ https://github.com/ropek745
 - Django 4.1
 - Aiogram 3.0.0rc1
 - reportlab 4.0.4
+- SpeechRecognition 3.10
+
 
 Cписок будет пополняться.

@@ -34,8 +34,6 @@ from ..validators import rewiew_validator
 
 route_router = Router()
 
-target = True
-
 
 @route_router.message(Command("routes"))
 async def command_routes(message: Message, state: FSMContext) -> None:
@@ -115,9 +113,10 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
 
 
 @route_router.message(Route.route_start)
-async def route_info_start(message: Message, state: FSMContext):
+async def route_info_start(message: Message, state: FSMContext) -> None:
+    '''Информация о маршруте.'''
     data = await state.get_data()
-    route = data.get('route_obj')
+    route = data.get("route_obj")
     await message.answer(
         ms.EXHIBIT_SELECTION.format(route.address)
     )
@@ -136,11 +135,11 @@ async def route_info(message: Message, state: FSMContext) -> None:
     """Начало пути """
 
     await state.set_state(Block.block)
-    route_id = message.text.split(' ')[-1]
+    route_id = message.text.split(" ")[-1]
     try:
         route = await get_route_by_id(route_id)
     except ObjectDoesNotExist:
-        logger.error('Пользователь ввел название маршрута, которого нет в бд.')
+        logger.error("Пользователь ввел название маршрута, которого нет в бд.")
         await message.answer(
             ms.ROUTE_SELECTION_ERROR
         )
@@ -209,9 +208,9 @@ async def refleksia_no(message: Message, state: FSMContext) -> None:
     '''Отр рефлексия'''
     exhibit = await get_exhibit_from_state(state)
     await state.update_data(answer_to_reflection=message.text)
-    if exhibit.reflection_negative != '':
+    if exhibit.reflection_negative != "":
         await message.answer(
-            f'{exhibit.reflection_negative}',
+            f"{exhibit.reflection_negative}",
             parse_mode="html"
         )
     else:
@@ -269,7 +268,7 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
 
     await asyncio.sleep(const.SLEEP_10)
 
-    if exhibit.reflection != '':
+    if exhibit.reflection != "":
         await message.answer(
             f"{exhibit.reflection}",
             reply_markup=ReplyKeyboardMarkup(
@@ -289,10 +288,7 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
 @route_router.message(Route.review, F.text | F.voice)
 async def review(message: Message, state: FSMContext) -> None:
     '''Получения отзыва'''
-    global target
-    target = True
-    print(await state.get_data())
-    answer = ''
+    answer = ""
     if message.voice:
         if message.voice.duration <= MAXIMUM_DURATION_VOICE_MESSAGE:
             voice_file = io.BytesIO()
@@ -328,28 +324,32 @@ async def review(message: Message, state: FSMContext) -> None:
                              reply_markup=keyboard_for_send_review())
 
 
-@route_router.callback_query(F.data == 'send_review')
-async def resend_review(callback: types.CallbackQuery, state: FSMContext):
+@route_router.callback_query(F.data == "send_review")
+async def resend_review(
+    callback: types.CallbackQuery, state: FSMContext
+) -> None:
     await callback.answer()
     await callback.message.edit_reply_markup()
     await callback.message.answer(ms.WRITE_YOUR_OPINION)
     await state.set_state(Route.review)
 
 
-@route_router.callback_query(F.data == 'dont_send_review')
-async def skip_send_review(callback: types.CallbackQuery, state: FSMContext):
+@route_router.callback_query(F.data == "dont_send_review")
+async def skip_send_review(
+    callback: types.CallbackQuery, state: FSMContext
+) -> None:
     await callback.answer()
     await callback.message.edit_reply_markup()
     await set_route(state, callback.message)
 
 
-@route_router.callback_query(Route.transition, F.data == 'in_place')
-async def in_place(callback: types.CallbackQuery, state: FSMContext):
+@route_router.callback_query(Route.transition, F.data == "in_place")
+async def in_place(callback: types.CallbackQuery, state: FSMContext) -> None:
     """Кнопка "На месте", переход на некст объект."""
     await callback.answer()
     await callback.message.edit_reply_markup()
     exhibit_obj = await get_exhibit_from_state(state)
-    if exhibit_obj.message_before_description != '':
+    if exhibit_obj.message_before_description != "":
         await callback.message.answer(
             f"{exhibit_obj.message_before_description}",
             reply_markup=ReplyKeyboardRemove()
@@ -361,19 +361,17 @@ async def in_place(callback: types.CallbackQuery, state: FSMContext):
         await exhibit_info(callback.message, state)
 
 
-@route_router.callback_query(Route.transition, F.data == 'route')
-async def show_route(callback: types.CallbackQuery, state: FSMContext):
+@route_router.callback_query(Route.transition, F.data == "route")
+async def show_route(callback: types.CallbackQuery, state: FSMContext) -> None:
     """Кнопка "Маршрут", что-то делает ?."""
     await callback.answer()
-    # await callback.message.edit_reply_markup()
     data = await state.get_data()
     route = data.get('route_obj')
     image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
     await callback.message.answer(
-        'Вот карта маршрута, надесюсь она вам поможет'
+        "Вот карта маршрута, надесюсь она вам поможет"
     )
     await callback.message.answer_photo(image)
-    # await set_route(state, callback.message)
 
 
 @route_router.message(Route.transition, F.text)
@@ -387,30 +385,30 @@ async def transition(message: Message, state: FSMContext) -> None:
         reply_markup=ReplyKeyboardRemove()
     )
     await message.answer(
-        text='Когда будешь на месте сообщи мне',
+        text="Когда будешь на месте сообщи мне",
         reply_markup=keyboard_for_transition())
 
 
-@route_router.message(Route.quiz,  F.text == 'Да')
+@route_router.message(Route.quiz,  F.text == "Да")
 async def return_route(message: Message, state: FSMContext) -> None:
-    '''вернутся на марщрут'''
+    """Вернутся на марщрут"""
     await state.set_state(None)
     await command_routes(message, state)
 
 
-@route_router.message(Route.quiz,  F.text == 'Нет')
+@route_router.message(Route.quiz,  F.text == "Нет")
 async def leave_route(message: Message, state: FSMContext) -> None:
-    '''Уход с маршрута'''
+    """Уход с маршрута"""
     await message.answer(
-        'Команда фестиваля прощается с Вами! Всего наилучшего!',
+        "Команда фестиваля прощается с Вами! Всего наилучшего!",
         reply_markup=ReplyKeyboardRemove()
     )
     await state.clear()
 
 
-@route_router.message(Route.quiz, F.text == 'Конец')
+@route_router.message(Route.quiz, F.text == "Конец")
 async def end_route(message: Message, state: FSMContext) -> None:
-    '''Конец маршрута'''
+    """Конец маршрута"""
     await message.answer(ms.RESPONSE_MESSAGE)
     await message.answer(
         ms.RETURN_TO_ROUTES,
@@ -422,7 +420,7 @@ async def end_route(message: Message, state: FSMContext) -> None:
 
 
 @route_router.message(F.text)
-async def unknown_text(message: Message):
+async def unknown_text(message: Message) -> None:
     """Ловит все сообщения от пользователя,
     если они не попадают под условиях функций выше.
     """
@@ -431,12 +429,13 @@ async def unknown_text(message: Message):
 
 
 @route_router.message(F.content_type.ANY)
-async def unknown_message(message: Message):
+async def unknown_message(message: Message) -> None:
+    """Ответ не на текст."""
     await message.reply(emoji.emojize(':astonished:', language='alias'),)
     message_text = text(
-        'Я не знаю, что с этим делать ',
-        italic('\nЯ просто напомню,'), 'что есть',
-        code('команда'), '/help',
+        "Я не знаю, что с этим делать ",
+        italic("\nЯ просто напомню,"), "что есть",
+        code("команда"), "/help",
     )
     await message.reply(message_text, parse_mode=ParseMode.MARKDOWN)
     await message.answer_dice('⚽')

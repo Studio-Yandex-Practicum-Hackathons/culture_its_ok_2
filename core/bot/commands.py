@@ -8,9 +8,7 @@ from aiogram.types import (
 from aiogram.fsm.context import FSMContext
 
 from .config import ADMIN_ID
-from .keyboards import (
-    set_command
-)
+from .keyboards import set_command
 from .handlers import meetings_router, route_router
 from . import message as ms
 from .utils import User
@@ -35,10 +33,10 @@ async def end_bot(bot: Bot):
 @main_router.message(Command("help"))
 async def help_info(message: Message) -> None:
     commands = {
-        '/start': 'Нажмите для приветсвеного сообщения',
-        '/routes': 'Нажмите для выбора маршрута',
-        '/cancel': 'Нажмите для отмены команды',
-        '/help': 'Нажмите для просмотра доступных команд'
+        "/start": "Нажмите для приветсвеного сообщения",
+        "/routes": "Нажмите для выбора маршрута",
+        "/cancel": "Нажмите для отмены команды",
+        "/help": "Нажмите для просмотра доступных команд"
     }
     text = ''
     for command in commands:

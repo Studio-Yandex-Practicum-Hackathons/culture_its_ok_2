@@ -32,14 +32,14 @@ async def get_route_from_state(state: FSMContext):
 
 
 async def speech_to_text_conversion(filename) -> str:
-    '''
+    """
     Конвертация речи в текст.
 
     Делать буду через speech recognition. Вероятно надо будет аудиофайл
     привести в нужный формат перед конвертацией
     1. Привести файл в нужный формат.
     2. Конвертация в текст
-    '''
+    """
     recogniser = speech_r.Recognizer()
     data, samplerate = sf.read(filename)
     voice_file = io.BytesIO()
@@ -52,9 +52,9 @@ async def speech_to_text_conversion(filename) -> str:
 
 
 async def set_route(state: FSMContext, message: Message):
-    '''
+    """
     Устанавливает состояние Route в зависимости кончился маршрут или нет.
-    '''
+    """
     exhibit = await get_exhibit_from_state(state)
     route_id, exhibit_number = await get_id_from_state(state)
     exhibit_number += 1
