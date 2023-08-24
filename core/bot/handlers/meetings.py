@@ -37,7 +37,7 @@ async def get_age(message: Message, state: FSMContext) -> None:
         await message.answer(ms.AGE_MESSAGE)
 
 
-@meetings_router.message(User.hobby, F.text == 'другое')
+@meetings_router.message(User.hobby, F.text == "другое")
 async def get_hobby_another(message: Message, state: FSMContext) -> None:
     """Получает хобби(другое) пользователя"""
     await message.answer(
@@ -50,7 +50,7 @@ async def get_hobby_list(message: Message, state: FSMContext) -> None:
     """Получает хобби пользователя из списка"""
     await state.update_data(userhobby=message.text)
     data = await state.get_data()
-    name = data.get('username')
+    name = data.get("username")
     await message.answer(
         ms.END_ACQUAINTANCE.format(name),
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)
@@ -63,7 +63,7 @@ async def get_hobby(message: Message, state: FSMContext) -> None:
     """Получает хобби пользователя"""
     await state.update_data(userhobby=message.text)
     data = await state.get_data()
-    name = data.get('username')
+    name = data.get("username")
     await message.answer(
         ms.END_ACQUAINTANCE.format(name),
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)

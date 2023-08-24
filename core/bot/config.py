@@ -17,7 +17,7 @@ MAXIMUM_DURATION_VOICE_MESSAGE: int = 10
 logging.basicConfig(
     handlers=[logging.FileHandler(
         filename="main.log",
-        encoding="utf-8", mode='w')],
+        encoding="utf-8", mode="w")],
     format="%(asctime)s, %(levelname)s, %(message)s",
     level=logging.DEBUG,
 )

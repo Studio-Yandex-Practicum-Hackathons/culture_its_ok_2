@@ -16,14 +16,14 @@ main_router.include_router(route_router)
 
 
 @main_router.startup()
-async def start_bot(bot: Bot):
+async def start_bot(bot: Bot) -> None:
     await set_command(bot)
-    await bot.send_message(ADMIN_ID, 'Бот начал свою работу')
+    await bot.send_message(ADMIN_ID, "Бот начал свою работу")
 
 
 @main_router.shutdown()
-async def end_bot(bot: Bot):
-    await bot.send_message(ADMIN_ID, 'Бот перестал работать')
+async def end_bot(bot: Bot) -> None:
+    await bot.send_message(ADMIN_ID, "Бот перестал работать")
 
 
 @main_router.message(Command("help"))
