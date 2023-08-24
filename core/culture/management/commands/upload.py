@@ -44,7 +44,7 @@ class Command(BaseCommand):
     help = 'Загрузка данных в БД.'
 
     def handle(self, *args: Any, **options: Any) -> Optional[str]:
-        doc: Document = Document(BASE_DIR + r'/data/Route_1/route_1.docx')
+        doc: Document = Document(BASE_DIR + r'/data/Route_1/fake_route_1.docx')
         paragraphs = self._find_first_paragraph_with_data(
             doc.paragraphs, start_with='маршрут'
         )
@@ -60,13 +60,45 @@ class Command(BaseCommand):
                 )
             )
         )
+        exhibits: list[Exhibit] = self._exhibits(paragraphs, exhibits=[])
+        exhibits_to_route: list[int] = [exhibit.id for exhibit in exhibits]
+        model.exhibite.add(*exhibits_to_route)
         self._check_paragraphs(paragraphs)
+        # paragraphs = self._find_first_paragraph_with_data(
+        #     paragraphs, start_with='объект'
+        # )
+        # self._check_paragraphs(paragraphs)
+        # data, paragraphs = self._create_data(
+        #     paragraphs, EXHIBIT_FIELDS, data={}
+        # )
+        # model = self._create_model(data, Exhibit)
+        # model.image.save(
+        #     'img.JPG',
+        #     File(
+        #         open(
+        #             (f'{BASE_DIR}{r"/data/Route_1/"}'
+        #              f'{r"1. Максим Има. Руки бы им всем оторвать.jpg"}'), 'rb'
+        #         )
+        #     )
+        # )
+        print('OOOO!')
+
+    def _exhibits(
+            self, paragraphs, exhibits: list[Optional[int]]
+    ) -> list[Exhibit]:
+        # add exit from recursion
         paragraphs = self._find_first_paragraph_with_data(
             paragraphs, start_with='объект'
         )
-        self._check_paragraphs(paragraphs)
-        data, paragraphs = self._create_data(paragraphs, EXHIBIT_FIELDS, data={})
+        if paragraphs is None:
+            return exhibits
+        # parse data for exhibit
+        data, paragraphs = self._create_data(paragraphs,
+                                             EXHIBIT_FIELDS, data={})
+        # create exhibit
         model = self._create_model(data, Exhibit)
+        # find photo
+        # add photo
         model.image.save(
             'img.JPG',
             File(
@@ -76,9 +108,13 @@ class Command(BaseCommand):
                 )
             )
         )
-        print('OOOO!')
+        # add model.id to exhibits
+        exhibits.append(model)
+        return self._exhibits(paragraphs, exhibits)
 
-    def _create_data(self, paragraphs, fields, data={}):
+    def _create_data(
+            self, paragraphs, fields, data={}
+    ) -> tuple[dict[str, str], list[Paragraph]]:
         for paragraph in paragraphs:
             text: str = paragraph.text
             if len(fields) == 0:
@@ -127,7 +163,7 @@ class Command(BaseCommand):
                 paragraphs[1:], start_with
             )
 
-    def _create_model(self, data: dict[str, str], model: Model) -> None:
+    def _create_model(self, data: dict[str, str], model: Model) -> Model:
         return model.objects.create(**data)
 
     def _check_paragraphs(self, paragraphs):
