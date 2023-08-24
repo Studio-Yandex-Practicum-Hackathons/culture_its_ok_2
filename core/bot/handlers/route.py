@@ -1,9 +1,8 @@
 import asyncio
-
-import emoji
 import io
 import random
 
+import emoji
 from aiogram import F, Router, types
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
@@ -14,22 +13,19 @@ from aiogram.utils.markdown import code, italic, text
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import RequestError, UnknownValueError
 
-
-from .. import message as ms
-from ..config import logger, MAXIMUM_DURATION_VOICE_MESSAGE
 from .. import constants as const
+from .. import message as ms
+from ..config import MAXIMUM_DURATION_VOICE_MESSAGE, logger
 from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
                     get_routes_id, save_review)
 from ..exceptions import FeedbackError
-from ..functions import (get_exhibit_from_state,
-                         get_id_from_state, get_route_from_state,
-                         set_route, speech_to_text_conversion)
-from ..keyboards import (
-    KEYBOARD_YES_NO, keyboard_yes,
-    keyboard_for_send_review, make_vertical_keyboard,
-    keyboard_for_transition, make_row_keyboard
-)
-from ..utils import Route, Block
+from ..functions import (get_exhibit_from_state, get_id_from_state,
+                         get_route_from_state, set_route,
+                         speech_to_text_conversion)
+from ..keyboards import (KEYBOARD_YES_NO, keyboard_for_send_review,
+                         keyboard_for_transition, keyboard_yes,
+                         make_row_keyboard, make_vertical_keyboard)
+from ..utils import Block, Route
 from ..validators import rewiew_validator
 
 route_router = Router()
@@ -104,6 +100,7 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
     if exhibit.message_before_description != '':
         await message.answer(
             f"{exhibit.message_before_description}",
+            reply_markup=ReplyKeyboardRemove(),
         )
         await state.set_state(Route.podvodka)
     else:
@@ -211,7 +208,7 @@ async def refleksia_no(message: Message, state: FSMContext) -> None:
     if exhibit.reflection_negative != "":
         await message.answer(
             f"{exhibit.reflection_negative}",
-            parse_mode="html"
+            reply_markup=ReplyKeyboardRemove(),
         )
     else:
         await message.answer(
@@ -231,7 +228,7 @@ async def refleksia_yes(message: Message, state: FSMContext) -> None:
     await state.update_data(answer_to_reflection=message.text)
     await message.answer(
         f"{exhibit.reflection_positive}",
-        parse_mode="html"
+        reply_markup=ReplyKeyboardRemove(),
     )
     await message.answer(
         ms.REVIEW_ASK,
@@ -260,7 +257,6 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
     await message.answer(
         f"{exhibit.description}",
         reply_markup=ReplyKeyboardRemove(),
-        parse_mode="html"
     )
 
     image = FSInputFile(path=const.PATH_MEDIA + str(exhibit.image))

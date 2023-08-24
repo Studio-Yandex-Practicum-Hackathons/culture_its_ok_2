@@ -1,18 +1,14 @@
 """Основные команды бота. Кнопки старт и маршруты"""
-from aiogram import F, Router, Bot
+from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandStart
-from aiogram.types import (
-    Message,
-    ReplyKeyboardRemove,
-)
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, ReplyKeyboardRemove
 
-from .config import ADMIN_ID
-from .keyboards import set_command
-from .handlers import meetings_router, route_router
 from . import message as ms
+from .config import ADMIN_ID
+from .handlers import meetings_router, route_router
+from .keyboards import set_command
 from .utils import User
-
 
 main_router = Router()
 main_router.include_router(meetings_router)
