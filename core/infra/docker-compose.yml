@@ -34,6 +34,8 @@ services:
     restart: always
     working_dir: "/app/core"
     command: python manage.py bot
+    volumes:
+      - media_value:/app/core/media
     depends_on:
       - db
       - web
