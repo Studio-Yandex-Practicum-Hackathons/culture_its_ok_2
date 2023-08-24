@@ -42,6 +42,7 @@ https://github.com/ropek745
 - Aiogram 3.0.0rc1
 - reportlab 4.0.4
 - SpeechRecognition 3.10
+- django_ckeditor 6.7.0
 
 
 Cписок будет пополняться.
