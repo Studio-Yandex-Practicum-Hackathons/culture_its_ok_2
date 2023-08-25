@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Optional
 
 from django.core.files import File
@@ -43,53 +44,52 @@ class UploadError(CommandError):
 class Command(BaseCommand):
     help = 'Загрузка данных в БД.'
 
-    def handle(self, *args: Any, **options: Any) -> Optional[str]:
-        doc: Document = Document(BASE_DIR + r'/data/Route_1/fake_route_1.docx')
-        paragraphs = self._find_first_paragraph_with_data(
-            doc.paragraphs, start_with='маршрут'
-        )
-        self._check_paragraphs(paragraphs)
-        data, paragraphs = self._create_data(paragraphs, ROUTE_FIELDS, data={})
-        model = self._create_model(data, Route)
-        model.image.save(
-            'img.JPG',
-            File(
-                open(
-                    (f'{BASE_DIR}{r"/data/Route_1/"}'
-                     f'{r"1. Максим Има. Руки бы им всем оторвать.jpg"}'), 'rb'
-                )
+    def handle(self, *args: Any, **options: Any) -> None:
+        # Проверить что в BASE_DIR есть папка data
+        self._check_folder_exists('data')
+        # Собрать список из путей к папкам маршрутов
+        routes_folders = self._routes_folders_in_dir('data')
+        for folder in routes_folders:
+            # Найти docx
+            path_to_file = folder.glob('*.docx')
+            file = path_to_file.__next__()
+            doc = Document(file)
+            data, paragraphs = self._create_data(
+                doc.paragraphs, ROUTE_FIELDS, data={}
             )
-        )
-        exhibits: list[Exhibit] = self._exhibits(paragraphs, exhibits=[])
-        exhibits_to_route: list[int] = [exhibit.id for exhibit in exhibits]
-        model.exhibite.add(*exhibits_to_route)
-        self._check_paragraphs(paragraphs)
+            model = self._create_model(data, Route)
+            skin = self._get_skin(folder, 'обложка')
+            model.image.save(
+                'skin.jpg',
+                File(open(skin, 'rb'))
+            )
+            exhibits: list[Exhibit] = self._exhibits(paragraphs, folder, exhibits=[])
+            exhibits_to_route: list[int] = [exhibit.id for exhibit in exhibits]
+            model.exhibite.add(*exhibits_to_route)
+        # exhibits: list[Exhibit] = self._exhibits(
+        #     paragraphs, folder, exhibits=[]
+        # )
+        # exhibits_to_route: list[int] = [exhibit.id for exhibit in exhibits]
+        # model.exhibite.add(*exhibits_to_route)
+        print('OOOO!')
+
+    def _get_skin(self, folder, name: str) -> Path:
+        return folder.glob(f'{name}.*').__next__()
+
+    def _routes_folders_in_dir(self, dir: str) -> list[Path]:
+        return Path(f'{BASE_DIR}/{dir}').glob('*')
+
+    def _check_folder_exists(self, folder: str):
+        if not Path(f'{BASE_DIR}/{folder}').exists:
+            raise UploadError(f'Не найдена папка {folder}')
+
+    def _exhibits(
+            self, paragraphs, folder, exhibits: list[Optional[int]]
+    ) -> list[Exhibit]:
+        # add exit from recursion
         # paragraphs = self._find_first_paragraph_with_data(
         #     paragraphs, start_with='объект'
         # )
-        # self._check_paragraphs(paragraphs)
-        # data, paragraphs = self._create_data(
-        #     paragraphs, EXHIBIT_FIELDS, data={}
-        # )
-        # model = self._create_model(data, Exhibit)
-        # model.image.save(
-        #     'img.JPG',
-        #     File(
-        #         open(
-        #             (f'{BASE_DIR}{r"/data/Route_1/"}'
-        #              f'{r"1. Максим Има. Руки бы им всем оторвать.jpg"}'), 'rb'
-        #         )
-        #     )
-        # )
-        print('OOOO!')
-
-    def _exhibits(
-            self, paragraphs, exhibits: list[Optional[int]]
-    ) -> list[Exhibit]:
-        # add exit from recursion
-        paragraphs = self._find_first_paragraph_with_data(
-            paragraphs, start_with='объект'
-        )
         if paragraphs is None:
             return exhibits
         # parse data for exhibit
@@ -98,19 +98,12 @@ class Command(BaseCommand):
         # create exhibit
         model = self._create_model(data, Exhibit)
         # find photo
+        skin = self._get_skin(folder, f'{model.name}-{model.author}')
         # add photo
-        model.image.save(
-            'img.JPG',
-            File(
-                open(
-                    (f'{BASE_DIR}{r"/data/Route_1/"}'
-                     f'{r"1. Максим Има. Руки бы им всем оторвать.jpg"}'), 'rb'
-                )
-            )
-        )
+        model.image.save('img.JPG', File(open(skin, 'rb')))
         # add model.id to exhibits
         exhibits.append(model)
-        return self._exhibits(paragraphs, exhibits)
+        return self._exhibits(paragraphs, exhibits, folder)
 
     def _create_data(
             self, paragraphs, fields, data={}
