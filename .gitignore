@@ -156,3 +156,6 @@ tmp/voices/
 *.ogg
 *.wav
 
+.DS_Store
+
+static/

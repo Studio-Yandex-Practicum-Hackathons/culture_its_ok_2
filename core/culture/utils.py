@@ -3,13 +3,24 @@ from datetime import datetime
 from io import BytesIO
 
 from django.conf import settings
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate
 from reportlab.platypus.tables import Table, TableStyle, colors
 
-TABLE_HEADER = ["Username", "Возраст", "Текст отзыва"]
+TABLE_HEADER = [
+    "Имя",
+    "Возраст",
+    "Хобби",
+    "Объект",
+    "Ответ на подводку",
+    "Ответ на рефлексию",
+    "Текст отзыва",
+]
 
 styles = getSampleStyleSheet()
 
@@ -25,25 +36,73 @@ def generate_pdf(data):
     """Создание отчета в формате .pdf"""
 
     buffer = BytesIO()
-    report = SimpleDocTemplate(buffer)
+    report = SimpleDocTemplate(buffer, pagesize=landscape(A4))
 
     styles = getSampleStyleSheet()
     header_style = styles["Heading2"]
 
     elements = []
 
-    header = Paragraph(f"Отчет на {datetime.now()}", header_style)
+    header = Paragraph(f"Отзывы, {datetime.now()}", header_style)
     elements.append(header)
 
-    table_header = TABLE_HEADER.copy()
-    table_content = [
-        map(str, [obj.username, obj.userage, obj.text]) for obj in data
-        ]
-    table_data = [table_header, *table_content]
+    content = [
+        map(
+            str,
+            [
+                review.username,
+                review.userage,
+                review.userhobby,
+                review.exhibit,
+                review.answer_to_message_before_description,
+                review.answer_to_reflection,
+                review.text,
+            ],
+        )
+        for review in data
+    ]
+    table_data = [TABLE_HEADER.copy(), *content]
     table = Table(table_data)
-    table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), colors.aqua)]))
+    table.setStyle(
+        TableStyle([("BACKGROUND", (0, 0), (-1, 0), colors.dimgrey)])
+    )
     elements.append(table)
 
     report.build(elements)
     buffer.seek(0)
     return buffer
+
+
+def update_spreadsheet(reviews):
+    """Экспорт данных в существующий файл Google Spreadsheets"""
+
+    credentials = None
+    credentials = service_account.Credentials.from_service_account_info(
+        info=settings.SPREADSHEETS_INFO, scopes=settings.SPREADSHEETS_SCOPES
+    )
+    service = build("sheets", "v4", credentials=credentials)
+    sheet = service.spreadsheets()
+
+    content = [
+        [
+            review.username,
+            review.userage,
+            review.userhobby,
+            str(review.exhibit),
+            review.answer_to_message_before_description,
+            review.answer_to_reflection,
+            review.text,
+        ]
+        for review in reviews
+    ]
+    data = [TABLE_HEADER.copy(), *content]
+
+    sheet.values().clear(
+        spreadsheetId=settings.SPREADSHEET_ID, range="A1:G1"
+    ).execute()
+    sheet.values().append(
+        spreadsheetId=settings.SPREADSHEET_ID,
+        range="A1:G1",
+        valueInputOption="USER_ENTERED",
+        body={"values": data},
+    ).execute()

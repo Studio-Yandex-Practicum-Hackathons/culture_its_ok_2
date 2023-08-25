@@ -1,9 +1,9 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from .. import message as ms
-from ..keyboards import MAIN_COMMANDS, make_vertical_keyboard, HOBBY
+from ..keyboards import HOBBY, MAIN_COMMANDS, make_vertical_keyboard
 from ..utils import User
 from ..validators import check_age, check_name
 
@@ -37,12 +37,20 @@ async def get_age(message: Message, state: FSMContext) -> None:
         await message.answer(ms.AGE_MESSAGE)
 
 
-@meetings_router.message(User.hobby, F.text == 'другое')
+@meetings_router.message(User.hobby, F.text == "другое")
 async def get_hobby_another(message: Message, state: FSMContext) -> None:
-    """Получает хобби пользователя"""
+    """Получает хобби(другое) пользователя"""
+    await message.answer(
+        "Введите ваше хобби."
+    )
+
+
+@meetings_router.message(User.hobby, F.text.in_(HOBBY))
+async def get_hobby_list(message: Message, state: FSMContext) -> None:
+    """Получает хобби пользователя из списка"""
     await state.update_data(userhobby=message.text)
     data = await state.get_data()
-    name = data.get('username')
+    name = data.get("username")
     await message.answer(
         ms.END_ACQUAINTANCE.format(name),
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)
@@ -50,12 +58,12 @@ async def get_hobby_another(message: Message, state: FSMContext) -> None:
     await state.set_state(None)
 
 
-@meetings_router.message(User.hobby, F.text.in_(HOBBY))
+@meetings_router.message(User.hobby,)
 async def get_hobby(message: Message, state: FSMContext) -> None:
     """Получает хобби пользователя"""
     await state.update_data(userhobby=message.text)
     data = await state.get_data()
-    name = data.get('username')
+    name = data.get("username")
     await message.answer(
         ms.END_ACQUAINTANCE.format(name),
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)
