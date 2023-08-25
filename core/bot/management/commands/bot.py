@@ -8,10 +8,10 @@ from ...config import logger
 
 
 class Command(BaseCommand):
-    help = 'Запускает бота.'
+    help = "Запускает бота."
 
     def handle(self, *args: Any, **options: Any) -> Optional[str]:
         try:
             asyncio.run(main())
         except (KeyboardInterrupt, SystemExit):
-            logger.info('Bot stopped')
+            logger.info("Bot stopped")

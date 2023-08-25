@@ -2,7 +2,7 @@
 
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
-from culture.models import Review, Route
+from culture.models import Review, Route, Exhibit
 
 
 async def get_routes_name() -> list:
@@ -19,17 +19,17 @@ async def get_routes_id() -> list:
     )
 
 
-async def get_route_by_id(id: str):
+async def get_route_by_id(id: str) -> Route:
     """Получение маршрута по id."""
     return await Route.objects.aget(id=id)
 
 
-async def get_route_by_name(name: str):
+async def get_route_by_name(name: str) -> Route:
     """Получение маршрута по name."""
     return await Route.objects.aget(name=name)
 
 
-async def get_exhibit(route_id: str, exhibit_number: int):
+async def get_exhibit(route_id: str, exhibit_number: int) -> Exhibit:
     """Получение экспоната по id. Надо немного изменить модели.
     Надо исправить"""
     route = await get_route_by_id(route_id)
@@ -37,19 +37,19 @@ async def get_exhibit(route_id: str, exhibit_number: int):
     return exhibit
 
 
-async def save_review(text: str, state: FSMContext):
-    '''Запись отзыва в БД'''
+async def save_review(text: str, state: FSMContext) -> None:
+    """Запись отзыва в БД"""
     data = await state.get_data()
-    data['text'] = text
-    data.pop('route')
-    data.pop('exhibit_number')
-    data.pop('count_exhibits')
-    data.pop('route_obj')
+    data["text"] = text
+    data.pop("route")
+    data.pop("exhibit_number")
+    data.pop("count_exhibits")
+    data.pop("route_obj")
     await Review.objects.acreate(
         **data
     )
 
 
-async def get_all_exhibits_by_route(route):
+async def get_all_exhibits_by_route(route) -> list[Exhibit]:
     """Получение всех экспонатов у данного маршрута."""
     return await sync_to_async(list)(route.exhibite.all())

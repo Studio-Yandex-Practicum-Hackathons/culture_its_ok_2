@@ -7,14 +7,13 @@ from .commands import main_router
 from .config import TELEGRAM_TOKEN, logger
 
 
-async def main():
+async def main() -> None:
     try:
-        bot = Bot(token=TELEGRAM_TOKEN,)
+        bot = Bot(token=TELEGRAM_TOKEN, parse_mode="html")
     except TelegramServerError as error:
-        logger.error(f'Ошибка в запуске бота {error}')
+        logger.error(f"Ошибка в запуске бота {error}")
     dp = Dispatcher()
     dp.include_router(main_router)
-    # не уверен что надо иммено тут
     logger.info("Bot включился!")
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
