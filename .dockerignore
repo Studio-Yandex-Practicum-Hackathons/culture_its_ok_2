@@ -21,3 +21,8 @@ README.md
 *.log
 .git
 .mypy_cache/
+
+*.db
+dump.json
+
+static/
