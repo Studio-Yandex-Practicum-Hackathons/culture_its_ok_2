@@ -10,8 +10,10 @@ FONTS_DIR = os.path.join(BASE_DIR, "fonts")
 
 SECRET_KEY = os.environ["SECRET_KEY"]
 
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
+
+DEBUG = False
+ALLOWED_HOSTS = ['*']
+
 
 
 INSTALLED_APPS = [
@@ -59,9 +61,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+
+    'default': {
+        'ENGINE': os.environ['DB_ENGINE'],
+        'NAME': os.environ['DB_NAME'],
+        'USER': os.environ['POSTGRES_USER'],
+        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+        'HOST': os.environ['DB_HOST'],
+        'PORT': os.environ['DB_PORT'],
     }
 }
 
@@ -91,6 +98,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost']
 
 CKEDITOR_CONFIGS = {
     "default": {

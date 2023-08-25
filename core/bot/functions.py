@@ -14,21 +14,21 @@ from .utils import Route
 async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
     """Полученние имени маршрута и номера экспоната из state."""
     user_data = await state.get_data()
-    route_name = user_data.get('route')
-    exhibit_number = int(user_data.get('exhibit_number'))
+    route_name = user_data.get("route")
+    exhibit_number = int(user_data.get("exhibit_number"))
     return route_name, exhibit_number
 
 
 async def get_exhibit_from_state(state: FSMContext):
     """Полученние экспоната из state."""
     user_data = await state.get_data()
-    return user_data.get('exhibit')
+    return user_data.get("exhibit")
 
 
 async def get_route_from_state(state: FSMContext):
     """Полученние маршрута из state."""
     user_data = await state.get_data()
-    return user_data.get('route_obj')
+    return user_data.get("route_obj")
 
 
 async def speech_to_text_conversion(filename) -> str:
@@ -43,15 +43,15 @@ async def speech_to_text_conversion(filename) -> str:
     recogniser = speech_r.Recognizer()
     data, samplerate = sf.read(filename)
     voice_file = io.BytesIO()
-    sf.write(voice_file, data, samplerate, format='WAV', subtype='PCM_16')
+    sf.write(voice_file, data, samplerate, format="WAV", subtype="PCM_16")
     voice_file.seek(0)
     audio_file = speech_r.AudioFile(voice_file)
     with audio_file as source:
         audio = recogniser.record(source)
-    return recogniser.recognize_google(audio, language='ru-RU')
+    return recogniser.recognize_google(audio, language="ru-RU")
 
 
-async def set_route(state: FSMContext, message: Message):
+async def set_route(state: FSMContext, message: Message) -> None:
     """
     Устанавливает состояние Route в зависимости кончился маршрут или нет.
     """
@@ -62,18 +62,18 @@ async def set_route(state: FSMContext, message: Message):
     route = await get_route_by_id(route_id)
     if exhibit_number == len(await get_all_exhibits_by_route(route)):
         await message.answer(
-            'Конец маршрута',
-            reply_markup=make_row_keyboard(['Конец']),
+            "Конец маршрута",
+            reply_markup=make_row_keyboard(["Конец"]),
         )
         await state.set_state(Route.quiz)
     else:
-        if exhibit.transfer_message != '':
+        if exhibit.transfer_message != "":
             await message.answer(
                 f"{exhibit.transfer_message}",
             )
         await message.answer(
-            'Нас ждут длительные переходы',
-            reply_markup=make_row_keyboard(['Отлично идем дальше']),
+            "Нас ждут длительные переходы",
+            reply_markup=make_row_keyboard(["Отлично идем дальше"]),
         )
         exhibit = await get_exhibit(route_id, exhibit_number)
         await state.update_data(exhibit=exhibit)

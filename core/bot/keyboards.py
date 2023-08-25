@@ -4,7 +4,7 @@ from aiogram.types import (BotCommand, BotCommandScopeDefault,
                            InlineKeyboardButton, InlineKeyboardMarkup,
                            KeyboardButton, ReplyKeyboardMarkup)
 
-MAIN_COMMANDS = ["/routes", '/help']
+MAIN_COMMANDS = ["/routes", "/help"]
 
 HOBBY = ["искусство", "стрит-арт", "фотография", "прогулка", "спорт", "другое"]
 
@@ -16,7 +16,8 @@ REVIEW_KEYBOARD = [[
 ]]
 
 
-async def set_command(bot: Bot):
+async def set_command(bot: Bot) -> None:
+    """Устанавливает возможные команды для кнопки меню"""
     commands = [
         BotCommand(
             command="start",
@@ -57,7 +58,7 @@ def keyboard_yes() -> ReplyKeyboardMarkup:
 
 def keyboard_routes() -> ReplyKeyboardMarkup:
     """Создаёт реплай-клавиатуру с кнопкой /routes"""
-    button = KeyboardButton(text='/routes')
+    button = KeyboardButton(text="/routes")
     return ReplyKeyboardMarkup(keyboard=[[button]], resize_keyboard=True)
 
 
@@ -75,7 +76,7 @@ def make_vertical_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
     )
 
 
-def keyboard_for_send_review():
+def keyboard_for_send_review() -> InlineKeyboardMarkup:
     """
     Создаёт инлайн клавиатуру из двух кнопок.
     """
@@ -93,17 +94,17 @@ def keyboard_for_send_review():
     return keyboard
 
 
-def keyboard_for_transition():
-    '''
+def keyboard_for_transition() -> InlineKeyboardMarkup:
+    """
     Создаёт инлайн клавиатуру из двух кнопок для transition.
-    '''
+    """
     buttons = [
         [
             InlineKeyboardButton(
-                text='На месте', callback_data='in_place'
+                text="На месте", callback_data="in_place"
             ),
             InlineKeyboardButton(
-                text='Маршрут', callback_data='route'
+                text="Маршрут", callback_data="route"
             )
         ]
     ]
