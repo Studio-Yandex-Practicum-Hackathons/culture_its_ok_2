@@ -6,7 +6,6 @@ import speech_recognition as speech_r
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from ..culture.models import Route as Route_object
 from .crud import get_all_exhibits_by_route, get_exhibit, get_route_by_id
 from .keyboards import make_row_keyboard
 from .utils import Route
@@ -26,7 +25,7 @@ async def get_exhibit_from_state(state: FSMContext):
     return user_data.get("exhibit")
 
 
-async def get_route_from_state(state: FSMContext) -> Route_object:
+async def get_route_from_state(state: FSMContext):
     """Полученние маршрута из state."""
     user_data = await state.get_data()
     return user_data.get("route_obj")
