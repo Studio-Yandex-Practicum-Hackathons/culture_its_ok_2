@@ -16,18 +16,28 @@ main_router.include_router(route_router)
 
 
 @main_router.startup()
-async def start_bot(bot: Bot):
+async def start_bot(bot: Bot) -> None:
+    """
+    Срабатывает когда бот начал свою работу
+    и оповещает администратора об этом.
+    Выводит кнопку меню
+    """
     await set_command(bot)
-    await bot.send_message(ADMIN_ID, 'Бот начал свою работу')
+    await bot.send_message(ADMIN_ID, "Бот начал свою работу")
 
 
 @main_router.shutdown()
-async def end_bot(bot: Bot):
-    await bot.send_message(ADMIN_ID, 'Бот перестал работать')
+async def end_bot(bot: Bot) -> None:
+    """
+    Срабатывает когда бот закончил свою работу
+    и оповещает администратора об этом
+    """
+    await bot.send_message(ADMIN_ID, "Бот перестал работать")
 
 
 @main_router.message(Command("help"))
 async def help_info(message: Message) -> None:
+    """Команда /help выводит все возможные команды."""
     commands = {
         "/start": "Нажмите для приветсвеного сообщения",
         "/routes": "Нажмите для выбора маршрута",
@@ -43,6 +53,7 @@ async def help_info(message: Message) -> None:
 @main_router.message(Command("cancel"))
 @main_router.message(F.text.casefold() == "отмена")
 async def cmd_cancel(message: Message, state: FSMContext) -> None:
+    """Команда /cancel. Отменяет все действия и возвращает на начало."""
     await state.clear()
     await message.answer(
         text="Действие отменено",
