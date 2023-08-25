@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.http import FileResponse
 
 from .models import Exhibit, FeedBack, Review, Route, RouteExhibit
-from .utils import generate_pdf
+from .utils import generate_pdf, update_spreadsheet
 
 
 class ExhibitInline(admin.TabularInline):
@@ -20,12 +20,18 @@ class ReviewAdmin(admin.ModelAdmin):
     search_fields = ["exhibit__name", "username"]
     list_filter = ["exhibit", "username"]
     empty_value_display = "-пусто-"
-    actions = ["export_as_pdf"]
+    actions = ["export_to_spreadsheets", "export_as_pdf"]
 
     @admin.action(description="Скачать выбранные отзывы в формате pdf")
     def export_as_pdf(self, request, queryset):
         pdf = generate_pdf(queryset.order_by("exhibit"))
         return FileResponse(pdf, as_attachment=True, filename="report.pdf")
+
+    @admin.action(
+        description="Экспортировать выбранные отзывы в Google Spreadsheets"
+    )
+    def export_to_spreadsheets(self, request, queryset):
+        return update_spreadsheet(queryset.order_by("exhibit"))
 
 
 @admin.register(Exhibit)
