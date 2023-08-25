@@ -61,7 +61,7 @@ def generate_pdf(data):
         )
         for review in data
     ]
-    table_data = [TABLE_HEADER.copy(), content]
+    table_data = [TABLE_HEADER.copy(), *content]
     table = Table(table_data)
     table.setStyle(
         TableStyle([("BACKGROUND", (0, 0), (-1, 0), colors.dimgrey)])
