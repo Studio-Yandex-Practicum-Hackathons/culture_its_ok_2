@@ -1,9 +1,10 @@
 import asyncio
 import io
 import random
-
 import emoji
-from aiogram import F, Router, types
+
+from aiogram import F, Router, types, Bot
+from aiogram.enums import ChatAction
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -128,7 +129,7 @@ async def route_info_start(message: Message, state: FSMContext) -> None:
 
 
 @route_router.message(Route.route)
-async def route_info(message: Message, state: FSMContext) -> None:
+async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
     """Начало пути """
 
     await state.set_state(Block.block)
@@ -145,6 +146,7 @@ async def route_info(message: Message, state: FSMContext) -> None:
         ms.ROUTE_DESCRIPTION.format(route.name, route.description),
         reply_markup=ReplyKeyboardRemove()
     )
+    await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
     await asyncio.sleep(const.SLEEP_3)
     count_exhibits = len(await get_all_exhibits_by_route(route))
     await message.answer(
@@ -157,7 +159,8 @@ async def route_info(message: Message, state: FSMContext) -> None:
     image = FSInputFile(path=const.PATH_MEDIA + str(route.image))
     await message.answer_photo(image)
 
-    await asyncio.sleep(const.SLEEP_3)
+    await bot.send_chat_action(message.chat.id, ChatAction.UPLOAD_PHOTO)
+    await asyncio.sleep(10)
 
     await message.answer(
         ms.ROUTE_MAP
@@ -173,6 +176,7 @@ async def route_info(message: Message, state: FSMContext) -> None:
     await state.update_data(route_obj=route)
     await state.update_data(exhibit=exhibit)
 
+    await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
     await asyncio.sleep(const.SLEEP_3)
 
     if route.text_route_start != "":
@@ -193,11 +197,11 @@ async def route_info(message: Message, state: FSMContext) -> None:
 
 
 @route_router.message(Route.podvodka,)
-async def podvodka(message: Message, state: FSMContext) -> None:
+async def podvodka(message: Message, state: FSMContext, bot: Bot) -> None:
     """Запись ответа подводки в state."""
     await state.update_data(
         answer_to_message_before_description=message.text)
-    await exhibit_info(message, state)
+    await exhibit_info(message, state, bot)
 
 
 @route_router.message(Route.reflaksia,  F.text == const.NO)
@@ -240,7 +244,7 @@ async def refleksia_yes(message: Message, state: FSMContext) -> None:
         Route.exhibit,
         F.text.in_(const.ANSWERS_TO_CONTINUE)
 )
-async def exhibit_info(message: Message, state: FSMContext) -> None:
+async def exhibit_info(message: Message, state: FSMContext, bot: Bot) -> None:
     """
     Отрпавляет сообщение с экспонатом,
     запускается если есть состояние Route.exhibit
@@ -259,9 +263,12 @@ async def exhibit_info(message: Message, state: FSMContext) -> None:
         reply_markup=ReplyKeyboardRemove(),
     )
 
+    await asyncio.sleep(const.SLEEP_3)
+    await bot.send_chat_action(message.chat.id, ChatAction.UPLOAD_PHOTO)
     image = FSInputFile(path=const.PATH_MEDIA + str(exhibit.image))
     await message.answer_photo(image)
 
+    await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
     await asyncio.sleep(const.SLEEP_10)
 
     if exhibit.reflection != "":
@@ -340,7 +347,9 @@ async def skip_send_review(
 
 
 @route_router.callback_query(Route.transition, F.data == "in_place")
-async def in_place(callback: types.CallbackQuery, state: FSMContext) -> None:
+async def in_place(
+    callback: types.CallbackQuery, state: FSMContext, bot: Bot
+) -> None:
     """Кнопка "На месте", переход на некст объект."""
     await callback.answer()
     await callback.message.edit_reply_markup()
@@ -354,7 +363,7 @@ async def in_place(callback: types.CallbackQuery, state: FSMContext) -> None:
     else:
         await state.update_data(
             answer_to_message_before_description=const.NOT_PODVODKA)
-        await exhibit_info(callback.message, state)
+        await exhibit_info(callback.message, state, bot)
 
 
 @route_router.callback_query(Route.transition, F.data == "route")
