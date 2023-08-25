@@ -43,6 +43,6 @@ https://github.com/ropek745
 - reportlab 4.0.4
 - SpeechRecognition 3.10
 - django_ckeditor 6.7.0
-
+- google-api-python-client
 
 Cписок будет пополняться.
