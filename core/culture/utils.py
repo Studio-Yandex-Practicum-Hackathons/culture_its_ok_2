@@ -98,11 +98,11 @@ def update_spreadsheet(reviews):
     data = [TABLE_HEADER.copy(), *content]
 
     sheet.values().clear(
-        spreadsheetId=settings.SPREADSHEET_ID, range="Reviews!A1:G"
+        spreadsheetId=settings.SPREADSHEET_ID, range="A1:G1"
     ).execute()
     sheet.values().append(
         spreadsheetId=settings.SPREADSHEET_ID,
-        range="Reviews!A1:G1",
+        range="A1:G1",
         valueInputOption="USER_ENTERED",
         body={"values": data},
     ).execute()
