@@ -58,7 +58,7 @@ sudo apt install docker-compose
 scp -r /infra <username>@<host>:/home/<username>/
 scp .env <username>@<host>:/home/<username>/
 ```
-* На сервере соберите docker-compose:
+* На сервере соберите контейнеры:
 ```
 sudo docker-compose up -d --build
 ```
