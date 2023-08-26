@@ -1,7 +1,8 @@
 # .github/workflows/**main.yml**
 name: culture_its_ok_2
 
-on: [ master ]
+on:
+  push: [ "develop" ]
 
 jobs:
   python:
