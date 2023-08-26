@@ -1,6 +1,6 @@
-# culture_its_ok_2
+# Бот АНО -Культура”
 
-<h4>Авторы:</h4>
+## Авторы:
 
 **Изимов Арсений**  - студент Яндекс.Практикума Когорта 16+
 https://github.com/Arseny13
@@ -20,22 +20,66 @@ https://github.com/alexey-boborykin
 **Роман Пекарев**  - студент Яндекс.Практикума Когорта 16+
 https://github.com/ropek745
 
+## Описание
+Данный бот проводит экскурсию-медитацию по местам г.Ростова с работами уличных художников.
 
-<h2>Задание</h2>
+## Подготовка к использованию бота
+## Склонируйте репозиторий на локальную машину:
+```
+git clone https://github.com/Studio-Yandex-Practicum-Hackathons/culture_its_ok_2.git
+```
+* Локально отредактируйте файл infra/nginx.conf и в строке server_name впишите свой IP
+* В корне проекта создайте .env файл:
+    ```
+    TELEGRAM_TOKEN="12345"
+    SECRET_KEY="secret_key_django"
+    ADMIN_ID=123 #id телеграма администратора бота
+    DB_ENGINE= "django.db.backends.postgresql"
+    DB_NAME="имя базы данных postgres"
+    POSTGRES_USER="пользователь бд"
+    POSTGRES_PASSWORD="пароль"
+    DB_HOST="db"
+    DB_PORT="5432"
+    ```
 
-<h2>Как использовать</h2>
+## Запуск проекта на удаленном сервере
 
-Заполните файл .env как в .env.example.
+* Установите docker на сервер:
+```
+sudo apt install docker.io
+```
+* Установите docker-compose на сервер:
+```
+sudo apt install docker-compose
+```
 
-Запуск бота:
+* Скопируйте папку infra и файл .env на сервер:
+```
+scp -r /infra <username>@<host>:/home/<username>/
+scp .env <username>@<host>:/home/<username>/
+```
+* На сервере соберите docker-compose:
+```
+sudo docker-compose up -d --build
+```
+* После сборки контейнеров на сервере выполните команды (только после первого деплоя):
+    - Примените миграции:
+    ```
+    sudo docker-compose exec web python manage.py migrate
+    ```
+    - Создайте суперпользователя Django:
+    ```
+    sudo docker-compose exec web python manage.py createsuperuser
+    ```
+    - Соберите статику:
+    ```
+    sudo docker-compose exec web python manage.py collectstatic --noinput
+    ```
 
-- `cd core`
-- `python manage.py bot`
- 
-Не забудьте заполнить бд перед использованием 
+* Для заполнения или обновления базы данных по маршрутам и экспонатам перейдите по адресу https://your_ip_adress/admin и внесите необходимые изменения
+* Бот готов к работе. Перейдите в телеграм и следуйте инструкциям бота. Приятной экскурсии.
 
-
-<h2>Используемые технологии</h2>
+## Используемые технологии
 
 - Python 3.11
 - Django 4.1
