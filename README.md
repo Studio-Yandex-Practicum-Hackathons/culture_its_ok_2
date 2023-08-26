@@ -44,5 +44,7 @@ https://github.com/ropek745
 - SpeechRecognition 3.10
 - django_ckeditor 6.7.0
 - google-api-python-client
+- bs4 0.0.1
+- google==3.0.0
 
 Cписок будет пополняться.

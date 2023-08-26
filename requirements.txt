@@ -46,3 +46,6 @@ typing_extensions==4.7.1
 tzdata==2023.3
 urllib3==2.0.4
 yarl==1.9.2
+bs4==0.0.1
+lxml==4.9.3
+google==3.0.0
