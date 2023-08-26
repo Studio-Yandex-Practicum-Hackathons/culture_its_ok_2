@@ -55,7 +55,7 @@ jobs:
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
             cd ${{ secrets.DEPLOY_PATH }}
-
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.IMAGE_NAME_FRONT }}:latest 
             touch .env
             echo TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }} >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
