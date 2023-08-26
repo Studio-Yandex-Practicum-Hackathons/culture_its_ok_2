@@ -3,7 +3,7 @@ name: culture_its_ok_2
 
 on:
   push:
-    branches: [ "workflows" ]
+    branches: [ "develop" ]
 
 jobs:
   python:
