@@ -31,9 +31,9 @@ git clone https://github.com/Studio-Yandex-Practicum-Hackathons/culture_its_ok_2
 * Локально отредактируйте файл infra/nginx.conf и в строке server_name впишите свой IP
 * В корне проекта создайте .env файл:
     ```
-    TELEGRAM_TOKEN="12345"
+    TELEGRAM_TOKEN="your_telegram_token"
     SECRET_KEY="secret_key_django"
-    ADMIN_ID=123 #id телеграма администратора бота
+    ADMIN_ID="id телеграма администратора бота"
     DB_ENGINE= "django.db.backends.postgresql"
     DB_NAME="имя базы данных postgres"
     POSTGRES_USER="пользователь бд"
