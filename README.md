@@ -29,7 +29,7 @@ https://github.com/ropek745
 git clone https://github.com/Studio-Yandex-Practicum-Hackathons/culture_its_ok_2.git
 ```
 * В файле settings.py впишите свой IP в следующей строчке: CSRF_TRUSTED_ORIGINS = ['http://your_ip_adress']
-* Локально отредактируйте файл infra/nginx.conf и в строке server_name впишите свой IP
+* Локально отредактируйте файл infra/nginx/default.conf и в строке server_name впишите свой IP
 * В корне проекта создайте .env файл:
     ```
     TELEGRAM_TOKEN="your_telegram_token"
