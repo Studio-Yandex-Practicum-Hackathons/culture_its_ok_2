@@ -54,7 +54,6 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.IMAGE_NAME_FRONT }}:latest 
             cd ${{ secrets.DEPLOY_PATH }}
 
             touch .env
