@@ -4,7 +4,7 @@ from aiogram.types import (BotCommand, BotCommandScopeDefault,
                            InlineKeyboardButton, InlineKeyboardMarkup,
                            KeyboardButton, ReplyKeyboardMarkup)
 
-MAIN_COMMANDS = ["/routes", "/help"]
+MAIN_COMMANDS = ["Маршруты", "Помощь"]
 
 HOBBY = ["искусство", "стрит-арт", "фотография", "прогулка", "спорт", "другое"]
 

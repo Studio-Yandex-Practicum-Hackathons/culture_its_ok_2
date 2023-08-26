@@ -33,6 +33,7 @@ route_router = Router()
 
 
 @route_router.message(Command("routes"))
+@route_router.message(F.text == "Маршруты")
 async def command_routes(message: Message, state: FSMContext) -> None:
     """Команда /routes . Предлагает выбрать маршрут."""
     keybord = []
@@ -153,9 +154,6 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
         ms.NUMBER_EXHIBITS_IN_ROUTE.format(count_exhibits)
     )
 
-    await message.answer(
-        ms.ROUTE_COVER
-    )
     image = FSInputFile(path=const.PATH_MEDIA + str(route.image))
     await message.answer_photo(image)
 
@@ -320,7 +318,10 @@ async def review(message: Message, state: FSMContext) -> None:
     if not answer:
         await save_review(text, state)
         answer = ms.SUCCESSFUL_MESSAGE
-        await message.answer(text=answer)
+        await message.answer(
+            text=answer,
+            reply_markup=make_row_keyboard(["Отлично идем дальше"]),
+        )
         await set_route(state, message)
     else:
         await message.answer(text=ms.REVIEW_ERROR.format(answer),
@@ -343,6 +344,10 @@ async def skip_send_review(
 ) -> None:
     await callback.answer()
     await callback.message.edit_reply_markup()
+    await callback.message.answer(
+        'Очень жаль 😕',
+        reply_markup=make_row_keyboard(["Идем дальше"]),
+    )
     await set_route(state, callback.message)
 
 
