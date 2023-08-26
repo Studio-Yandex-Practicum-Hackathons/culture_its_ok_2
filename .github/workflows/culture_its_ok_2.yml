@@ -40,7 +40,7 @@ jobs:
         uses: docker/build-push-action@v4 
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_USERNAME }}:latest 
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.IMAGE_NAME_FRONT }}:latest 
 
   deploy:
     runs-on: ubuntu-latest
