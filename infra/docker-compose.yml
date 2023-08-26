@@ -10,7 +10,7 @@ services:
 
   web:
     container_name: web_2
-    image: arseny13/culture_bot:v1.1
+    image: arseny13/culture_bot:latest
     restart: always
     volumes:
       - static_value:/app/core/static/
@@ -34,7 +34,7 @@ services:
 
   bot:
     container_name: bot_2
-    image: arseny13/culture_bot:v1.1
+    image: arseny13/culture_bot:latest
     restart: always
     working_dir: "/app/core"
     command: python manage.py bot
