@@ -2,7 +2,8 @@
 name: culture_its_ok_2
 
 on:
-  push: [ "develop" ]
+  push:
+    branches: [ "workflows" ]
 
 jobs:
   python:
