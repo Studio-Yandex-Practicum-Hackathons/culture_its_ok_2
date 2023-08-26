@@ -60,6 +60,7 @@ async def set_route(state: FSMContext, message: Message) -> None:
     exhibit_number += 1
     await state.update_data(exhibit_number=exhibit_number)
     route = await get_route_by_id(route_id)
+
     if exhibit_number == len(await get_all_exhibits_by_route(route)):
         await message.answer(
             "Конец маршрута",
@@ -67,14 +68,11 @@ async def set_route(state: FSMContext, message: Message) -> None:
         )
         await state.set_state(Route.quiz)
     else:
+        exhibit = await get_exhibit(route_id, exhibit_number)
+        await state.update_data(exhibit=exhibit)
         if exhibit.transfer_message != "":
             await message.answer(
                 f"{exhibit.transfer_message}",
+                reply_markup=make_row_keyboard(["Отлично идем дальше"]),
             )
-        await message.answer(
-            "Нас ждут длительные переходы",
-            reply_markup=make_row_keyboard(["Отлично идем дальше"]),
-        )
-        exhibit = await get_exhibit(route_id, exhibit_number)
-        await state.update_data(exhibit=exhibit)
         await state.set_state(Route.transition)
