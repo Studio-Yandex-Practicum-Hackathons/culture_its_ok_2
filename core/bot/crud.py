@@ -2,7 +2,8 @@
 
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
-from culture.models import Review, Route, Exhibit
+
+from culture.models import Exhibit, Review, Route
 
 
 async def get_routes_name() -> list:

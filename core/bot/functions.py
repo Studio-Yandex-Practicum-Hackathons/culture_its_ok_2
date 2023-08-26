@@ -1,10 +1,13 @@
 """Файл с основными функциями, которые нужны для чистоты кода."""
 import io
+import re
 
 import soundfile as sf
 import speech_recognition as speech_r
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+from aiogram.utils.markdown import hlink
+from googlesearch import search
 
 from .crud import get_all_exhibits_by_route, get_exhibit, get_route_by_id
 from .keyboards import make_row_keyboard
@@ -76,3 +79,26 @@ async def set_route(state: FSMContext, message: Message) -> None:
                 reply_markup=make_row_keyboard(["Отлично идем дальше"]),
             )
         await state.set_state(Route.transition)
+
+
+async def get_tag_from_description(description: str) -> str:
+    """
+    Получение хеш-тега из описания и поиск первой ссылки в google по заданному
+    тегу.
+    Работает через связку Selenium + BeautifulSoup4
+    1. Через регулярку ищем в полученном на вход тексте хеш-тег
+    2. С помощью Selenium эмулируем закрытое окно браузера для прогрузки
+    JS, чтобы получить HTML
+    3. С помощью BeautifulSoup4 парсим HTML для поиска первой ссылки в поиске
+    гугла по-заданному хеш-тегу
+    4. Возвращаем ссылку
+    """
+    pattern = re.search(r'#\w+', description)
+    if pattern is None:
+        return description
+    text = pattern.group()
+    for i in search(text, lang='ru'):
+        url = i
+        break
+    new_text = hlink(text, url)
+    return description.replace(text, new_text)

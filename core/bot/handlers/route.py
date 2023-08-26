@@ -1,9 +1,9 @@
 import asyncio
 import io
 import random
-import emoji
 
-from aiogram import F, Router, types, Bot
+import emoji
+from aiogram import Bot, F, Router, types
 from aiogram.enums import ChatAction
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
@@ -16,13 +16,13 @@ from speech_recognition.exceptions import RequestError, UnknownValueError
 
 from .. import constants as const
 from .. import message as ms
-from ..config import MAXIMUM_DURATION_VOICE_MESSAGE, logger
+from ..config import MAXIMUM_DURATION_VOICE_MESSAGE, URL_TABLE_FEEDBACK, logger
 from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
                     get_routes_id, save_review)
 from ..exceptions import FeedbackError
 from ..functions import (get_exhibit_from_state, get_id_from_state,
-                         get_route_from_state, set_route,
-                         speech_to_text_conversion)
+                         get_route_from_state, get_tag_from_description,
+                         set_route, speech_to_text_conversion)
 from ..keyboards import (KEYBOARD_YES_NO, keyboard_for_send_review,
                          keyboard_for_transition, keyboard_yes,
                          make_row_keyboard, make_vertical_keyboard)
@@ -257,7 +257,7 @@ async def exhibit_info(message: Message, state: FSMContext, bot: Bot) -> None:
     exhibit = await get_exhibit_from_state(state)
 
     await message.answer(
-        f"{exhibit.description}",
+        await get_tag_from_description(exhibit.description),
         reply_markup=ReplyKeyboardRemove(),
     )
 
@@ -419,7 +419,7 @@ async def leave_route(message: Message, state: FSMContext) -> None:
 @route_router.message(Route.quiz, F.text == "Конец")
 async def end_route(message: Message, state: FSMContext) -> None:
     """Конец маршрута"""
-    await message.answer(ms.RESPONSE_MESSAGE)
+    await message.answer(ms.RESPONSE_MESSAGE.format(URL_TABLE_FEEDBACK))
     await message.answer(
         ms.RETURN_TO_ROUTES,
         reply_markup=ReplyKeyboardMarkup(
