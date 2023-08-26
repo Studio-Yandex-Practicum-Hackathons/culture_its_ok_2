@@ -1,7 +1,8 @@
-from api.views import (ExhibitViewSet, FeedBackViewSet, ReviewViewSet,
-                       RouteViewSet)
 from django.urls import include, path
 from rest_framework import routers
+
+from api.views import (ExhibitViewSet, FeedBackViewSet, ReviewViewSet,
+                       RouteViewSet)
 
 router = routers.DefaultRouter()
 router.register('feedbacks', FeedBackViewSet, basename='feedbacks')
