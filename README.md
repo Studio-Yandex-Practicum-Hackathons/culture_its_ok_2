@@ -86,12 +86,17 @@ sudo docker-compose up -d --build
 
 ## Используемые технологии
 
-- Python 3.11
-- Django 4.1
-- Aiogram 3.0.0rc1
-- reportlab 4.0.4
-- SpeechRecognition 3.10
-- django_ckeditor 6.7.0
+- Python 3.11 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+- Django 4.1 ![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white)
+- Aiogram 3.0.0rc1 ![Aiogram](https://img.shields.io/badge/Aiogram-3.0.0rc1-green?logo=Aiogram&logoColor=green&link=https%3A%2F%2Faiogram.dev)
+- reportlab 4.0.4 ![reportlab](https://img.shields.io/badge/reportlab-4.0.4-green?logo=reportlab&logoColor=green&link=https%3A%2F%2Fpypi.org%2Fproject%2Freportlab%2F)
+- SpeechRecognition 3.10 ![SpeechRecognition](https://img.shields.io/badge/SpeechRecognition-3.10-green?logo=SpeechRecognition&logoColor=green&link=https%3A%2F%2Fpypi.org%2Fproject%2FSpeechRecognition%2F)
+- django_ckeditor 6.7.0 ![django_ckeditor](https://img.shields.io/badge/django_ckeditor-6.7.0-green?logo=django_ckeditor&logoColor=green&link=https%3A%2F%2Fpypi.org%2Fproject%2Fdjango-ckeditor%2F)
+- [![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-464646?style=flat-square&logo=PostgreSQL)](https://www.postgresql.org/)
+- [![Nginx](https://img.shields.io/badge/-NGINX-464646?style=flat-square&logo=NGINX)](https://nginx.org/ru/)
+- [![gunicorn](https://img.shields.io/badge/-gunicorn-464646?style=flat-square&logo=gunicorn)](https://gunicorn.org/)
+- [![docker](https://img.shields.io/badge/-Docker-464646?style=flat-square&logo=docker)](https://www.docker.com/)
+- [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
 
 
 Cписок будет пополняться.
