@@ -46,5 +46,6 @@ https://github.com/ropek745
 - google-api-python-client
 - bs4 0.0.1
 - google==3.0.0
+- django-admin-rangefilter
 
 Cписок будет пополняться.

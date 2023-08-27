@@ -169,6 +169,10 @@ class Review(models.Model):
         null=True,
     )
     text = models.TextField(verbose_name="Текст отзыва")
+    created_at = models.DateField(
+        verbose_name="Дата создания",
+        auto_now_add=True
+    )
 
     class Meta:
         verbose_name = "Отзыв"

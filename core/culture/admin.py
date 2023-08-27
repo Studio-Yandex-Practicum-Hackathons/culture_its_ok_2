@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.http import FileResponse
+from rangefilter.filters import (
+    DateRangeQuickSelectListFilterBuilder,
+)
 
 from .models import Exhibit, FeedBack, Review, Route, RouteExhibit
 from .utils import generate_pdf, update_spreadsheet
@@ -16,9 +19,15 @@ class ReviewAdmin(admin.ModelAdmin):
         "pk",
         "username",
         "exhibit",
+        "created_at"
     )
     search_fields = ["exhibit__name", "username"]
-    list_filter = ["exhibit", "username"]
+    list_filter = (
+        "exhibit",
+        "username",
+        # ("created_at", DateRangeFilterBuilder()),
+        ("created_at", DateRangeQuickSelectListFilterBuilder()),
+    )
     empty_value_display = "-пусто-"
     actions = ["export_to_spreadsheets", "export_as_pdf"]
 
