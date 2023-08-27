@@ -15,24 +15,7 @@ class PreBase(models.Model):
         verbose_name="Описание",
         default="Без описания",
     )
-    image = models.ImageField(
-        upload_to="pictures",
-        verbose_name="Фото",
-    )
     address = RichTextField(verbose_name="Точный адрес")
-
-    def save(self, *args, **kwargs):
-        """Изменяется раширение изображения?"""
-        super(PreBase, self).save(*args, **kwargs)
-
-        if self.image:
-            fixed_width = 1080
-            filepath = self.image.path
-            img = Image.open(filepath)
-            width_percent = fixed_width / float(img.size[0])
-            height_size = int((float(img.size[1]) * float(width_percent)))
-            new_image = img.resize((fixed_width, height_size))
-            new_image.save(filepath)
 
     class Meta:
         abstract = True
@@ -43,9 +26,12 @@ class PreBase(models.Model):
 
 class Route(PreBase):
     """Модель для описания маршрутов"""
-
+    image = models.ImageField(
+        upload_to="routes",
+        verbose_name="Фото",
+    )
     route_map = models.ImageField(
-        upload_to="pictures",
+        upload_to="routes_map",
         verbose_name="Карта маршрута",
     )
     text_route_start = RichTextField(
@@ -57,6 +43,28 @@ class Route(PreBase):
         through="RouteExhibit",
         related_name="routes",
     )
+
+    def save(self, *args, **kwargs):
+        """Изменяется раширение изображения?"""
+        super(Route, self).save(*args, **kwargs)
+
+        if self.image:
+            fixed_width = 1080
+            filepath = self.image.path
+            img = Image.open(filepath)
+            width_percent = fixed_width / float(img.size[0])
+            height_size = int((float(img.size[1]) * float(width_percent)))
+            new_image = img.resize((fixed_width, height_size))
+            new_image.save(filepath)
+
+        if self.route_map:
+            fixed_width = 1080
+            filepath = self.route_map.path
+            img = Image.open(filepath)
+            width_percent = fixed_width / float(img.size[0])
+            height_size = int((float(img.size[1]) * float(width_percent)))
+            new_image = img.resize((fixed_width, height_size))
+            new_image.save(filepath)
 
     class Meta:
         ordering = ["id"]
@@ -99,6 +107,11 @@ class Exhibit(PreBase):
         verbose_name="Сообщение для перехода к следующему объекту",
         blank=True,
     )
+    image = models.ManyToManyField(
+        "Photo",
+        through="ExhibitPhoto",
+        related_name="exhibits",
+    )
 
     class Meta:
         ordering = ["id"]
@@ -132,6 +145,51 @@ class RouteExhibit(models.Model):
 
     def __str__(self):
         return f"Объект {self.exhibit.pk}"
+
+
+class Photo(models.Model):
+    image = models.ImageField(
+        upload_to="exhibit",
+        verbose_name="Фото",
+    )
+
+    def save(self, *args, **kwargs):
+        """Изменяется раширение изображения?"""
+        super(Photo, self).save(*args, **kwargs)
+
+        if self.image:
+            fixed_width = 1080
+            filepath = self.image.path
+            img = Image.open(filepath)
+            width_percent = fixed_width / float(img.size[0])
+            height_size = int((float(img.size[1]) * float(width_percent)))
+            new_image = img.resize((fixed_width, height_size))
+            new_image.save(filepath)
+
+
+class ExhibitPhoto(models.Model):
+    exhibit = models.ForeignKey(
+        Exhibit,
+        on_delete=models.CASCADE,
+        verbose_name="Объекты",
+    )
+    photo = models.ForeignKey(
+        Photo,
+        on_delete=models.CASCADE,
+        verbose_name="Фото",
+    )
+
+    class Meta:
+        verbose_name = "Фото"
+        verbose_name_plural = "Фото"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["exhibit", "photo"], name="unique_photos_exhibit"
+            )
+        ]
+
+    def __str__(self):
+        return f"Объект {self.photo.pk}"
 
 
 class Review(models.Model):

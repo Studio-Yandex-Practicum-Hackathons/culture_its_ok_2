@@ -15,11 +15,11 @@ from .. import constants as const
 from .. import message as ms
 from ..config import MAXIMUM_DURATION_VOICE_MESSAGE, URL_TABLE_FEEDBACK, logger
 from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
-                    get_routes_id, save_review)
+                    get_routes_id, save_review, get_all_photos_by_exhibit)
 from ..exceptions import FeedbackError
 from ..functions import (get_exhibit_from_state, get_id_from_state,
                          get_route_from_state, get_tag_from_description,
-                         set_route, speech_to_text_conversion, send_photo)
+                         set_route, speech_to_text_conversion, send_photo,)
 from ..keyboards import (KEYBOARD_YES_NO, keyboard_for_send_review,
                          keyboard_for_transition, keyboard_yes,
                          make_row_keyboard, make_vertical_keyboard)
@@ -164,6 +164,7 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
     await message.answer(
         ms.ROUTE_MAP
     )
+    print(route.route_map)
     image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
     await send_photo(message, image)
 
@@ -267,8 +268,10 @@ async def exhibit_info(message: Message, state: FSMContext, bot: Bot) -> None:
 
     await bot.send_chat_action(message.chat.id, ChatAction.UPLOAD_PHOTO)
     await asyncio.sleep(const.SLEEP_3)
-    image = FSInputFile(path=const.PATH_MEDIA + str(exhibit.image))
-    await send_photo(message, image)
+    photos = await get_all_photos_by_exhibit(exhibit)
+    for photo in photos:
+        image = FSInputFile(path=const.PATH_MEDIA + str(photo.image))
+        await send_photo(message, image)
 
     await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
     await asyncio.sleep(const.SLEEP_10)
@@ -383,7 +386,7 @@ async def show_route(callback: types.CallbackQuery, state: FSMContext) -> None:
     route = data.get("route_obj")
     image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
     await callback.message.answer(
-        "Вот карта маршрута, надесюсь она вам поможет"
+        "Вот карта маршрута, надеюсь она вам поможет"
     )
     await send_photo(callback.message, image)
 

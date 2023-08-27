@@ -3,7 +3,7 @@
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
 
-from culture.models import Exhibit, Review, Route
+from culture.models import Exhibit, Review, Route, Photo
 
 
 async def get_routes_name() -> list:
@@ -54,3 +54,8 @@ async def save_review(text: str, state: FSMContext) -> None:
 async def get_all_exhibits_by_route(route) -> list[Exhibit]:
     """Получение всех экспонатов у данного маршрута."""
     return await sync_to_async(list)(route.exhibite.all())
+
+
+async def get_all_photos_by_exhibit(exhibit) -> list[Photo]:
+    """Получение всех фото у данного эксплгата."""
+    return await sync_to_async(list)(exhibit.image.all())
