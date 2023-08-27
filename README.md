@@ -86,14 +86,14 @@ sudo docker-compose up -d --build
 
 ## Используемые технологии
 
-- [![Python](https://img.shields.io/badge/-Python3.11-464646?style=flat-square&logo=Python)](https://www.python.org/)
-- [![Django](https://img.shields.io/badge/-Django4.1-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
-- [![Aiogram](https://img.shields.io/badge/Aiogram-3.0.0rc1-green?logo=Aiogram&logoColor=green](https://aiogram.dev/)
-- [![reportlab](https://img.shields.io/badge/reportlab-4.0.4-green?logo=reportlab&logoColor=green](https://pypi.org/project/reportlab/)
-- [![SpeechRecognition](https://img.shields.io/badge/SpeechRecognition-3.10-green?logo=django_ckeditor&logoColor=green)](https://pypi.org/project/SpeechRecognition/)
-- [![django_ckeditor](https://img.shields.io/badge/django_ckeditor-6.7.0-green?logo=django_ckeditor&logoColor=green)](https://pypi.org/project/django-ckeditor/)
+- [![Python](https://img.shields.io/badge/-Python_3.11-464646?style=flat-square&logo=Python)](https://www.python.org/)
+- [![Django](https://img.shields.io/badge/-Django_4.1-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
 - [![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-464646?style=flat-square&logo=PostgreSQL)](https://www.postgresql.org/)
 - [![Nginx](https://img.shields.io/badge/-NGINX-464646?style=flat-square&logo=NGINX)](https://nginx.org/ru/)
 - [![gunicorn](https://img.shields.io/badge/-gunicorn-464646?style=flat-square&logo=gunicorn)](https://gunicorn.org/)
 - [![docker](https://img.shields.io/badge/-Docker-464646?style=flat-square&logo=docker)](https://www.docker.com/)
+- [![Aiogram](https://img.shields.io/badge/Aiogram-3.0.0rc1-green?logo=Aiogram&logoColor=green)](https://aiogram.dev/)
+- [![reportlab](https://img.shields.io/badge/reportlab-4.0.4-green?logo=reportlab&logoColor=green)](https://pypi.org/project/reportlab/)
+- [![SpeechRecognition](https://img.shields.io/badge/SpeechRecognition-3.10-green?logo=django_ckeditor&logoColor=green)](https://pypi.org/project/SpeechRecognition/)
+- [![django_ckeditor](https://img.shields.io/badge/django_ckeditor-6.7.0-green?logo=django_ckeditor&logoColor=green)](https://pypi.org/project/django-ckeditor/)
 - [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
