@@ -1,5 +1,7 @@
 # Бот АНО "Культура”
 
+![culture_its_ok_2 workflow](https://github.com/Studio-Yandex-Practicum-Hackathons/culture_its_ok_2/actions/workflows/culture_its_ok_2.yml/badge.svg)
+
 Бот проводит экскурсию-медитацию по местам г. Ростова с работами уличных художников.
 
 ## Авторы:
