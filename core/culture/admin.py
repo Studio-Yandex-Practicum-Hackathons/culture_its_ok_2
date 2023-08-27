@@ -27,6 +27,11 @@ class PhotoAdmin(admin.ModelAdmin):
         "pk",
     )
     empty_value_display = "-пусто-"
+    readonly_fields = ["preview"]
+
+    def preview(self, obj):
+        return mark_safe(
+            f'<img src="{obj.image.url}" style="max-height: 300px;">')
 
 
 @admin.register(Review)
