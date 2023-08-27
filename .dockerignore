@@ -3,6 +3,7 @@
 .gitignore
 .venv
 venv/
+media/
 *.dockerignore
 *.DS_Store
 *.code-workspace
@@ -21,9 +22,8 @@ README.md
 *.log
 .git
 .mypy_cache/
-
+.DS_Store
 *.db
 dump.json
-
 static/
 media/
