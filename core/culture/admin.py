@@ -5,13 +5,28 @@ from rangefilter.filters import (
     DateRangeQuickSelectListFilterBuilder,
 )
 
-from .models import Exhibit, FeedBack, Review, Route, RouteExhibit
+from .models import (
+    Exhibit, FeedBack, Review, Route,
+    Photo, RouteExhibit, ExhibitPhoto)
 from .utils import generate_pdf, update_spreadsheet
 
 
 class ExhibitInline(admin.TabularInline):
     model = RouteExhibit
     extra = 1
+
+
+class PhotoInline(admin.TabularInline):
+    model = ExhibitPhoto
+    extra = 1
+
+
+@admin.register(Photo)
+class PhotoAdmin(admin.ModelAdmin):
+    list_display = (
+        "pk",
+    )
+    empty_value_display = "-пусто-"
 
 
 @admin.register(Review)
@@ -53,15 +68,7 @@ class ExhibitAdmin(admin.ModelAdmin):
     search_fields = ["author", "name"]
     list_filter = ["author", "name"]
     empty_value_display = "-пусто-"
-    fields = ['name', 'author', 'description', 'image', 'preview',
-              'address', 'how_to_pass', 'message_before_description',
-              'reflection', 'reflection_positive', 'reflection_negative',
-              'transfer_message']
-    readonly_fields = ["preview"]
-
-    def preview(self, obj):
-        return mark_safe(
-            f'<img src="{obj.image.url}"  style="max-height: 200px;">')
+    inlines = (PhotoInline,)
 
 
 @admin.register(FeedBack)

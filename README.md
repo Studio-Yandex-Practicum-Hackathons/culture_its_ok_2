@@ -123,6 +123,5 @@ https://github.com/alexey-boborykin
 **Роман Пекарев**  - студент Яндекс.Практикума Когорта 16+
 https://github.com/ropek745
 
-
 **Баранов Виктор**  - студент Яндекс.Практикума Когорта 16+
 https://github.com/vityn101979
