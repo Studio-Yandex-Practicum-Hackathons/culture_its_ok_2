@@ -4,8 +4,9 @@ import re
 
 import soundfile as sf
 import speech_recognition as speech_r
+from aiogram.exceptions import TelegramNetworkError
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 from aiogram.utils.markdown import hlink
 from googlesearch import search
 
@@ -102,3 +103,11 @@ async def get_tag_from_description(description: str) -> str:
         break
     new_text = hlink(text, url)
     return description.replace(text, new_text)
+
+
+async def send_photo(message: Message, image: FSInputFile) -> None:
+    """Проверка при отправки фото."""
+    try:
+        await message.answer_photo(image)
+    except TelegramNetworkError:
+        await message.answer('Фото нет в media')
