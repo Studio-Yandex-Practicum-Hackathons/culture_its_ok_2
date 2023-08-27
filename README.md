@@ -1,4 +1,6 @@
-# Бот АНО -Культура”
+# Бот АНО "Культура”
+
+Бот проводит экскурсию-медитацию по местам г. Ростова с работами уличных художников.
 
 ## Авторы:
 
@@ -30,9 +32,9 @@ git clone https://github.com/Studio-Yandex-Practicum-Hackathons/culture_its_ok_2
 ```
 * В файле settings.py впишите свой IP в следующей строчке: CSRF_TRUSTED_ORIGINS = ['http://your_ip_adress']
 * Локально отредактируйте файл infra/nginx/default.conf и в строке server_name впишите свой IP
-* В корне проекта создайте .env файл:
+* В корне проекта создайте .env файл по аналогии с файлом .env.example:
     ```
-    TELEGRAM_TOKEN="your_telegram_token"
+    TELEGRAM_TOKEN="telegram_token_ID"
     SECRET_KEY="secret_key_django"
     ADMIN_ID="id телеграма администратора бота"
     DB_ENGINE= "django.db.backends.postgresql"
@@ -77,7 +79,7 @@ sudo docker-compose up -d --build
     sudo docker-compose exec web python manage.py collectstatic --noinput
     ```
 
-* Для заполнения или обновления базы данных по маршрутам и экспонатам перейдите по адресу https://your_ip_adress/admin и внесите необходимые изменения
+* Для заполнения или обновления базы данных по маршрутам и экспонатам перейдите по адресу https://your_ip_adress/admin
 * Бот готов к работе.
 * Перейдите в телеграм и следуйте инструкциям бота.
 * Приятной экскурсии!
