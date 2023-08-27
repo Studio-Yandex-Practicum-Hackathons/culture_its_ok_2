@@ -5,39 +5,51 @@
 ## Описание
 Бот проводит экскурсию-медитацию по местам г. Ростова с работами уличных художников.
 
-## Подготовка к использованию бота
+Наш бот в телеграме: https://t.me/culture_2_bot
+
+## Запуск проекта на локальной машине
+
+* Установите docker и docker-compose
+* Для установки на ubuntu выполните следующие команды:
+```
+sudo apt install docker.io
+sudo apt install docker-compose
+```
+Про установку на других операционных системах вы можете прочитать в [документации](https://docs.docker.com/engine/install/) и [про установку docker-compose](https://docs.docker.com/compose/install/).
+
+* Склонируйте репозиторий на локальную машину:
+```
+git clone https://github.com/Studio-Yandex-Practicum-Hackathons/culture_its_ok_2.git
+```
+* В корне проекта создайте .env файл по аналогии с файлом .env.example.
+* Перейдите в папку infra и соберите контейнеры:
+```
+docker-compose up -d
+```
+* Примените миграции:
+```
+docker-compose exec web python manage.py migrate
+```
+* Создайте суперпользователя Django:
+```
+docker-compose exec web python manage.py createsuperuser
+```
+* Соберите статику:
+```
+docker-compose exec web python manage.py collectstatic --noinput
+```
+
+* Для заполнения или обновления базы данных по маршрутам и экспонатам, а также для выгрузки отчётов в pdf перейдите по адресу https://localhost/admin
+* Перейдите в телеграм и следуйте инструкциям бота.
+
+## Запуск проекта на удаленном сервере
 * Склонируйте репозиторий на локальную машину:
 ```
 git clone https://github.com/Studio-Yandex-Practicum-Hackathons/culture_its_ok_2.git
 ```
 * В файле settings.py впишите свой IP в следующей строчке: CSRF_TRUSTED_ORIGINS = ['http://your_ip_adress']
-* Локально отредактируйте файл infra/nginx/default.conf и в строке server_name впишите свой IP
-* В корне проекта создайте .env файл по аналогии с файлом .env.example:
-    ```
-    TELEGRAM_TOKEN="telegram_token_ID"
-    SECRET_KEY="secret_key_django"
-    ADMIN_ID="id телеграма администратора бота"
-    SPREADSHEET_ID="spreadsheet_id"
-    TYPE="type"
-    PROJECT_ID="project_id"
-    PRIVATE_KEY_ID="private_key_id"
-    PRIVATE_KEY="private_key"
-    CLIENT_EMAIL="client_email"
-    CLIENT_ID="client_id"
-    AUTH_URI="auth_uri"
-    TOKEN_URI="token_uri"
-    AUTH_PROVIDER_X509_CERT_URL="auth_provider_x509_cert_url"
-    CLIENT_X509_CERT_URL="client_x509_cert_url"
-    DB_ENGINE= "django.db.backends.postgresql"
-    DB_NAME="имя базы данных postgres"
-    POSTGRES_USER="пользователь бд"
-    POSTGRES_PASSWORD="пароль"
-    DB_HOST="db"
-    DB_PORT="5432"
-    URL_TABLE_FEEDBACK = "Cсылка_на_таблицу_опросов"
-    ```
-
-## Запуск проекта на удаленном сервере
+* Отредактируйте файл infra/nginx/default.conf и в строке server_name впишите свой IP
+* В корне проекта создайте .env файл по аналогии с файлом .env.example.
 
 * Установите docker на сервер:
 ```
@@ -89,13 +101,13 @@ sudo docker-compose up -d --build
 - [![SpeechRecognition](https://img.shields.io/badge/SpeechRecognition-3.10-green?logo=django_ckeditor&logoColor=green)](https://pypi.org/project/SpeechRecognition/)
 - [![django_ckeditor](https://img.shields.io/badge/django_ckeditor-6.7.0-green?logo=django_ckeditor&logoColor=green)](https://pypi.org/project/django-ckeditor/)
 - [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
-- - google-api-python-client
-- bs4 0.0.1
-- google==3.0.0
+- [![Google](https://img.shields.io/badge/google-3.0.0-green?logo=google&logoColor=green)](https://pypi.org/project/google/)
+- [![google-api-python-client](https://img.shields.io/badge/google_api_python_client-2.97.0-green?logo=google_api_python_client&logoColor=green)](https://pypi.org/project/google-api-python-client/)
+- [![bs](https://img.shields.io/badge/bs-4%200.0.1-green?logo=bs&logoColor=green)](https://pypi.org/project/bs4/)
 
 ## Авторы:
 
-**Изимов Арсений**  - студент Яндекс.Практикума Когорта 16+ тимлид-студент
+**Изимов Арсений**  - студент Яндекс.Практикума Когорта 16+
 https://github.com/Arseny13
 
 **Дмитрий Абрамов**  - студент Яндекс.Практикума Когорта 16+
