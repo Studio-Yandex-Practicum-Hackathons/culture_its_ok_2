@@ -1,5 +1,9 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 from django.http import FileResponse
+from rangefilter.filters import (
+    DateRangeQuickSelectListFilterBuilder,
+)
 
 from .models import Exhibit, FeedBack, Review, Route, RouteExhibit
 from .utils import generate_pdf, update_spreadsheet
@@ -16,9 +20,14 @@ class ReviewAdmin(admin.ModelAdmin):
         "pk",
         "username",
         "exhibit",
+        "created_at"
     )
     search_fields = ["exhibit__name", "username"]
-    list_filter = ["exhibit", "username"]
+    list_filter = (
+        "exhibit",
+        "username",
+        ("created_at", DateRangeQuickSelectListFilterBuilder()),
+    )
     empty_value_display = "-пусто-"
     actions = ["export_to_spreadsheets", "export_as_pdf"]
 
@@ -44,6 +53,15 @@ class ExhibitAdmin(admin.ModelAdmin):
     search_fields = ["author", "name"]
     list_filter = ["author", "name"]
     empty_value_display = "-пусто-"
+    fields = ['name', 'author', 'description', 'image', 'preview',
+              'address', 'how_to_pass', 'message_before_description',
+              'reflection', 'reflection_positive', 'reflection_negative',
+              'transfer_message']
+    readonly_fields = ["preview"]
+
+    def preview(self, obj):
+        return mark_safe(
+            f'<img src="{obj.image.url}"  style="max-height: 200px;">')
 
 
 @admin.register(FeedBack)
@@ -68,3 +86,12 @@ class RouteAdmin(admin.ModelAdmin):
     list_filter = ["name"]
     empty_value_display = "-пусто-"
     inlines = (ExhibitInline,)
+    readonly_fields = ["preview", "preview_map"]
+
+    def preview(self, obj):
+        return mark_safe(
+            f'<img src="{obj.image.url}" style="max-height: 300px;">')
+
+    def preview_map(self, obj):
+        return mark_safe(
+            f'<img src="{obj.route_map.url}" style="max-height: 200px;">')

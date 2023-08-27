@@ -14,8 +14,6 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = False
 ALLOWED_HOSTS = ['*']
 
-
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -23,8 +21,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "rest_framework",
     "ckeditor",
+    'rangefilter',
+    'csp',
+
     "api.apps.ApiConfig",
     "culture.apps.CultureConfig",
     "bot.apps.BotConfig",

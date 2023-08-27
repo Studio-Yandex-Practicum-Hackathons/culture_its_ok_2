@@ -104,6 +104,7 @@ sudo docker-compose up -d --build
 - [![Google](https://img.shields.io/badge/google-3.0.0-green?logo=google&logoColor=green)](https://pypi.org/project/google/)
 - [![google-api-python-client](https://img.shields.io/badge/google_api_python_client-2.97.0-green?logo=google_api_python_client&logoColor=green)](https://pypi.org/project/google-api-python-client/)
 - [![bs](https://img.shields.io/badge/bs-4%200.0.1-green?logo=bs&logoColor=green)](https://pypi.org/project/bs4/)
+- - django-admin-rangefilter
 
 ## Авторы:
 
@@ -121,6 +122,7 @@ https://github.com/alexey-boborykin
 
 **Роман Пекарев**  - студент Яндекс.Практикума Когорта 16+
 https://github.com/ropek745
+
 
 **Баранов Виктор**  - студент Яндекс.Практикума Когорта 16+
 https://github.com/vityn101979

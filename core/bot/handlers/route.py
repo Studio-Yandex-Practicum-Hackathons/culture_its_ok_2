@@ -2,15 +2,12 @@ import asyncio
 import io
 import random
 
-import emoji
 from aiogram import Bot, F, Router, types
 from aiogram.enums import ChatAction
-from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (FSInputFile, Message, ReplyKeyboardMarkup,
                            ReplyKeyboardRemove)
-from aiogram.utils.markdown import code, italic, text
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import RequestError, UnknownValueError
 
@@ -22,7 +19,7 @@ from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
 from ..exceptions import FeedbackError
 from ..functions import (get_exhibit_from_state, get_id_from_state,
                          get_route_from_state, get_tag_from_description,
-                         set_route, speech_to_text_conversion)
+                         set_route, speech_to_text_conversion, send_photo)
 from ..keyboards import (KEYBOARD_YES_NO, keyboard_for_send_review,
                          keyboard_for_transition, keyboard_yes,
                          make_row_keyboard, make_vertical_keyboard)
@@ -39,6 +36,9 @@ async def command_routes(message: Message, state: FSMContext) -> None:
     keybord = []
     for route in await get_routes_id():
         keybord.append(const.ROUTE + str(route))
+    if not keybord:
+        await message.answer('На данный момент нет доступных маршрутов')
+        return
     await message.reply(
          text=ms.CHOOSE_ROUTE_MESSAGE,
          reply_markup=make_vertical_keyboard(keybord),
@@ -84,7 +84,7 @@ async def start_route_no(message: Message, state: FSMContext) -> None:
         ms.ROUTE_MAP
     )
     image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
-    await message.answer_photo(image)
+    await send_photo(message, image)
     await message.answer(
         ms.CHECK_START_MEDITATION.format(route.address),
         reply_markup=keyboard_yes(),
@@ -155,16 +155,17 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
     )
 
     image = FSInputFile(path=const.PATH_MEDIA + str(route.image))
-    await message.answer_photo(image)
+
+    await send_photo(message, image)
 
     await bot.send_chat_action(message.chat.id, ChatAction.UPLOAD_PHOTO)
-    await asyncio.sleep(10)
+    await asyncio.sleep(5)
 
     await message.answer(
         ms.ROUTE_MAP
     )
     image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
-    await message.answer_photo(image)
+    await send_photo(message, image)
 
     await state.update_data(route=route_id)
     await state.update_data(exhibit_number=0)
@@ -178,7 +179,10 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
     await asyncio.sleep(const.SLEEP_3)
 
     if route.text_route_start != "":
-        await message.answer(f"{route.text_route_start}")
+        await message.answer(
+            f"{route.text_route_start}",
+            reply_markup=make_row_keyboard(["Хорошо"]),
+        )
         await state.set_state(Route.route_start)
         return
     await message.answer(
@@ -261,10 +265,10 @@ async def exhibit_info(message: Message, state: FSMContext, bot: Bot) -> None:
         reply_markup=ReplyKeyboardRemove(),
     )
 
-    await asyncio.sleep(const.SLEEP_3)
     await bot.send_chat_action(message.chat.id, ChatAction.UPLOAD_PHOTO)
+    await asyncio.sleep(const.SLEEP_3)
     image = FSInputFile(path=const.PATH_MEDIA + str(exhibit.image))
-    await message.answer_photo(image)
+    await send_photo(message, image)
 
     await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
     await asyncio.sleep(const.SLEEP_10)
@@ -381,7 +385,7 @@ async def show_route(callback: types.CallbackQuery, state: FSMContext) -> None:
     await callback.message.answer(
         "Вот карта маршрута, надесюсь она вам поможет"
     )
-    await callback.message.answer_photo(image)
+    await send_photo(callback.message, image)
 
 
 @route_router.message(Route.transition, F.text)
@@ -427,26 +431,3 @@ async def end_route(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         )
     )
-
-
-@route_router.message(F.text)
-async def unknown_text(message: Message) -> None:
-    """Ловит все сообщения от пользователя,
-    если они не попадают под условиях функций выше.
-    """
-    pass
-    # await message.answer("Я тебя не понимаю, попробую использовать команды.")
-
-
-@route_router.message(F.content_type.ANY)
-async def unknown_message(message: Message) -> None:
-    """Ответ не на текст."""
-    await message.reply(emoji.emojize(":astonished:", language="alias"),)
-    message_text = text(
-        "Я не знаю, что с этим делать ",
-        italic("\nЯ просто напомню,"), "что есть",
-        code("команда"), "/help",
-    )
-    await message.reply(message_text, parse_mode=ParseMode.MARKDOWN)
-    await message.answer_dice("⚽")
-    await message.answer_dice("🎰")

@@ -15,7 +15,6 @@ Django==4.1
 djangorestframework==3.14.0
 drf-extra-fields==3.7.0
 django_ckeditor==6.7.0
-emoji==2.7.0
 filetype==1.2.0
 flake8==6.1.0
 frozenlist==1.4.0
@@ -49,3 +48,5 @@ yarl==1.9.2
 bs4==0.0.1
 lxml==4.9.3
 google==3.0.0
+django-admin-rangefilter==0.11.0
+csp==0.1a10

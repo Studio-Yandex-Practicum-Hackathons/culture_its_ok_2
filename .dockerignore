@@ -26,3 +26,4 @@ README.md
 *.db
 dump.json
 static/
+media/
