@@ -89,10 +89,13 @@ sudo docker-compose up -d --build
 - [![SpeechRecognition](https://img.shields.io/badge/SpeechRecognition-3.10-green?logo=django_ckeditor&logoColor=green)](https://pypi.org/project/SpeechRecognition/)
 - [![django_ckeditor](https://img.shields.io/badge/django_ckeditor-6.7.0-green?logo=django_ckeditor&logoColor=green)](https://pypi.org/project/django-ckeditor/)
 - [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
+- - google-api-python-client
+- bs4 0.0.1
+- google==3.0.0
 
 ## Авторы:
 
-**Изимов Арсений**  - студент Яндекс.Практикума Когорта 16+
+**Изимов Арсений**  - студент Яндекс.Практикума Когорта 16+ тимлид-студент
 https://github.com/Arseny13
 
 **Дмитрий Абрамов**  - студент Яндекс.Практикума Когорта 16+

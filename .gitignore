@@ -156,3 +156,5 @@ tmp/voices/
 *.wav
 
 .DS_Store
+
+static/

@@ -23,3 +23,6 @@ README.md
 .git
 .mypy_cache/
 .DS_Store
+*.db
+dump.json
+static/

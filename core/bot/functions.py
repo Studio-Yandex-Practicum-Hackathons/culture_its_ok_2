@@ -1,12 +1,14 @@
 """Файл с основными функциями, которые нужны для чистоты кода."""
 import io
+import re
 
 import soundfile as sf
 import speech_recognition as speech_r
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+from aiogram.utils.markdown import hlink
+from googlesearch import search
 
-from ..culture.models import Route as Route_object
 from .crud import get_all_exhibits_by_route, get_exhibit, get_route_by_id
 from .keyboards import make_row_keyboard
 from .utils import Route
@@ -26,7 +28,7 @@ async def get_exhibit_from_state(state: FSMContext):
     return user_data.get("exhibit")
 
 
-async def get_route_from_state(state: FSMContext) -> Route_object:
+async def get_route_from_state(state: FSMContext):
     """Полученние маршрута из state."""
     user_data = await state.get_data()
     return user_data.get("route_obj")
@@ -61,6 +63,7 @@ async def set_route(state: FSMContext, message: Message) -> None:
     exhibit_number += 1
     await state.update_data(exhibit_number=exhibit_number)
     route = await get_route_by_id(route_id)
+
     if exhibit_number == len(await get_all_exhibits_by_route(route)):
         await message.answer(
             "Конец маршрута",
@@ -68,14 +71,34 @@ async def set_route(state: FSMContext, message: Message) -> None:
         )
         await state.set_state(Route.quiz)
     else:
+        exhibit = await get_exhibit(route_id, exhibit_number)
+        await state.update_data(exhibit=exhibit)
         if exhibit.transfer_message != "":
             await message.answer(
                 f"{exhibit.transfer_message}",
+                reply_markup=make_row_keyboard(["Отлично идем дальше"]),
             )
-        await message.answer(
-            "Нас ждут длительные переходы",
-            reply_markup=make_row_keyboard(["Отлично идем дальше"]),
-        )
-        exhibit = await get_exhibit(route_id, exhibit_number)
-        await state.update_data(exhibit=exhibit)
         await state.set_state(Route.transition)
+
+
+async def get_tag_from_description(description: str) -> str:
+    """
+    Получение хеш-тега из описания и поиск первой ссылки в google по заданному
+    тегу.
+    Работает через связку Selenium + BeautifulSoup4
+    1. Через регулярку ищем в полученном на вход тексте хеш-тег
+    2. С помощью Selenium эмулируем закрытое окно браузера для прогрузки
+    JS, чтобы получить HTML
+    3. С помощью BeautifulSoup4 парсим HTML для поиска первой ссылки в поиске
+    гугла по-заданному хеш-тегу
+    4. Возвращаем ссылку
+    """
+    pattern = re.search(r'#\w+', description)
+    if pattern is None:
+        return description
+    text = pattern.group()
+    for i in search(text, lang='ru'):
+        url = i
+        break
+    new_text = hlink(text, url)
+    return description.replace(text, new_text)
