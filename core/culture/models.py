@@ -1,3 +1,4 @@
+from django.utils.safestring import mark_safe
 from ckeditor.fields import RichTextField
 from django.db import models
 from PIL import Image
@@ -165,6 +166,10 @@ class Photo(models.Model):
             height_size = int((float(img.size[1]) * float(width_percent)))
             new_image = img.resize((fixed_width, height_size))
             new_image.save(filepath)
+
+    def img_preview(self):
+        return mark_safe(
+            f'<img src="{self.image.url}" style="max-height: 300px;">')
 
 
 class ExhibitPhoto(models.Model):

@@ -23,15 +23,12 @@ class PhotoInline(admin.TabularInline):
 
 @admin.register(Photo)
 class PhotoAdmin(admin.ModelAdmin):
+    readonly_fields = ["img_preview"]
     list_display = (
         "pk",
+        "img_preview"
     )
     empty_value_display = "-пусто-"
-    readonly_fields = ["preview"]
-
-    def preview(self, obj):
-        return mark_safe(
-            f'<img src="{obj.image.url}" style="max-height: 300px;">')
 
 
 @admin.register(Review)
