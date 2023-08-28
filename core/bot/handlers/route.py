@@ -150,6 +150,7 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
         await message.answer(
             ms.ROUTE_SELECTION_ERROR
         )
+        await state.set_state(Route.choose)
         return
     await message.answer(
         ms.ROUTE_DESCRIPTION.format(
