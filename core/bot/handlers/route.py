@@ -148,7 +148,7 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
     except ObjectDoesNotExist:
         logger.error("Пользователь ввел название маршрута, которого нет в бд.")
         await message.answer(
-            ms.ROUTE_SELECTION_ERROR
+            ms.ROUTE_ERROR
         )
         await state.set_state(Route.choose)
         return
