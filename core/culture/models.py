@@ -1,7 +1,7 @@
 from django.utils.safestring import mark_safe
 from ckeditor.fields import RichTextField
 from django.db import models
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 class PreBase(models.Model):
@@ -53,6 +53,7 @@ class Route(PreBase):
             fixed_width = 1080
             filepath = self.image.path
             img = Image.open(filepath)
+            img = ImageOps.exif_transpose(img)
             width_percent = fixed_width / float(img.size[0])
             height_size = int((float(img.size[1]) * float(width_percent)))
             new_image = img.resize((fixed_width, height_size))
@@ -62,6 +63,7 @@ class Route(PreBase):
             fixed_width = 1080
             filepath = self.route_map.path
             img = Image.open(filepath)
+            img = ImageOps.exif_transpose(img)
             width_percent = fixed_width / float(img.size[0])
             height_size = int((float(img.size[1]) * float(width_percent)))
             new_image = img.resize((fixed_width, height_size))
@@ -162,6 +164,7 @@ class Photo(models.Model):
             fixed_width = 1080
             filepath = self.image.path
             img = Image.open(filepath)
+            img = ImageOps.exif_transpose(img)
             width_percent = fixed_width / float(img.size[0])
             height_size = int((float(img.size[1]) * float(width_percent)))
             new_image = img.resize((fixed_width, height_size))
