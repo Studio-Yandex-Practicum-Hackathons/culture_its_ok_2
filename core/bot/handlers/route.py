@@ -43,7 +43,7 @@ async def command_routes(message: Message, state: FSMContext) -> None:
          text=ms.CHOOSE_ROUTE_MESSAGE,
          reply_markup=make_vertical_keyboard(keybord),
     )
-    await state.set_state(Route.route)
+    await state.set_state(Route.choose)
 
 
 @route_router.message(Route.route,  F.text.regexp(r"\d+"))
@@ -129,12 +129,19 @@ async def route_info_start(message: Message, state: FSMContext) -> None:
     await state.set_state(Route.route)
 
 
-@route_router.message(Route.route)
+@route_router.message(Route.choose)
 async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
     """Начало пути """
 
     await state.set_state(Block.block)
     route_id = message.text.split(" ")[-1]
+    try:
+        route_id = int(route_id)
+    except ValueError:
+        await message.answer("Не получилось преобразовать в номер маршрута")
+        await message.answer("Повторите попытку")
+        await state.set_state(Route.choose)
+        return
     try:
         route = await get_route_by_id(route_id)
     except ObjectDoesNotExist:
@@ -144,7 +151,10 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
         )
         return
     await message.answer(
-        ms.ROUTE_DESCRIPTION.format(route.name, route.description),
+        ms.ROUTE_DESCRIPTION.format(    
+            route.name,
+            route.description.replace('<p>', '').replace('</p>', '')
+        ),
         reply_markup=ReplyKeyboardRemove()
     )
     await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
@@ -164,7 +174,7 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
     await message.answer(
         ms.ROUTE_MAP
     )
-    print(route.route_map)
+
     image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
     await send_photo(message, image)
 
@@ -181,13 +191,13 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
 
     if route.text_route_start != "":
         await message.answer(
-            f"{route.text_route_start}",
+            f"{route.text_route_start.replace('<p>', '').replace('</p>', '')}",
             reply_markup=make_row_keyboard(["Хорошо"]),
         )
         await state.set_state(Route.route_start)
         return
     await message.answer(
-        ms.EXHIBIT_SELECTION.format(route.address)
+        ms.EXHIBIT_SELECTION.format(route.address.replace('<p>', '').replace('</p>', ''))
     )
     await message.answer(
         ms.START_ROUTE_MESSAGE,
@@ -214,7 +224,7 @@ async def refleksia_no(message: Message, state: FSMContext) -> None:
     await state.update_data(answer_to_reflection=message.text)
     if exhibit.reflection_negative != "":
         await message.answer(
-            f"{exhibit.reflection_negative}",
+            f"{exhibit.reflection_negative.replace('<p>', '').replace('</p>', '')}",
             reply_markup=ReplyKeyboardRemove(),
         )
     else:
@@ -234,7 +244,7 @@ async def refleksia_yes(message: Message, state: FSMContext) -> None:
     exhibit = await get_exhibit_from_state(state)
     await state.update_data(answer_to_reflection=message.text)
     await message.answer(
-        f"{exhibit.reflection_positive}",
+        f"{exhibit.reflection_positive.replace('<p>', '').replace('</p>', '')}",
         reply_markup=ReplyKeyboardRemove(),
     )
     await message.answer(
@@ -278,7 +288,7 @@ async def exhibit_info(message: Message, state: FSMContext, bot: Bot) -> None:
 
     if exhibit.reflection != "":
         await message.answer(
-            f"{exhibit.reflection}",
+            f"{exhibit.reflection.replace('<p>', '').replace('</p>', '')}",
             reply_markup=ReplyKeyboardMarkup(
                 keyboard=KEYBOARD_YES_NO,
                 resize_keyboard=True,
@@ -368,7 +378,7 @@ async def in_place(
     exhibit_obj = await get_exhibit_from_state(state)
     if exhibit_obj.message_before_description != "":
         await callback.message.answer(
-            f"{exhibit_obj.message_before_description}",
+            f"{exhibit_obj.message_before_description.replace('<p>', '').replace('</p>', '')}",
             reply_markup=ReplyKeyboardRemove()
         )
         await state.set_state(Route.podvodka)
@@ -397,7 +407,8 @@ async def transition(message: Message, state: FSMContext) -> None:
     exhibit_obj = await get_exhibit_from_state(state)
     await message.answer(
         ms.INFO_NEXT_OBJECT.format(
-            exhibit_obj.address, exhibit_obj.how_to_pass
+            exhibit_obj.address.replace('<p>', '').replace('</p>', ''),
+            exhibit_obj.how_to_pass.replace('<p>', '').replace('</p>', '')
         ),
         reply_markup=ReplyKeyboardRemove()
     )

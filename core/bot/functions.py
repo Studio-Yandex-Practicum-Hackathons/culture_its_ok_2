@@ -76,7 +76,7 @@ async def set_route(state: FSMContext, message: Message) -> None:
         await state.update_data(exhibit=exhibit)
         if exhibit.transfer_message != "":
             await message.answer(
-                f"{exhibit.transfer_message}",
+                f"{exhibit.transfer_message.replace('<p>', '').replace('</p>', '')}",
                 reply_markup=make_row_keyboard(["Отлично идем дальше"]),
             )
         await state.set_state(Route.transition)
@@ -102,7 +102,8 @@ async def get_tag_from_description(description: str) -> str:
         url = i
         break
     new_text = hlink(text, url)
-    return description.replace(text, new_text)
+    return description.replace(
+        text, new_text).replace('<p>', '').replace('</p>', '')
 
 
 async def send_photo(message: Message, image: FSInputFile) -> None:
