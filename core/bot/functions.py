@@ -96,7 +96,7 @@ async def get_tag_from_description(description: str) -> str:
     """
     pattern = re.search(r'#\w+', description)
     if pattern is None:
-        return description
+        return description.replace('<p>', '').replace('</p>', '')
     text = pattern.group()
     for i in search(text, lang='ru'):
         url = i
