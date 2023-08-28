@@ -1,6 +1,7 @@
 """Файл с основными функциями, которые нужны для чистоты кода."""
 import io
 import re
+import bleach
 
 import soundfile as sf
 import speech_recognition as speech_r
@@ -10,9 +11,18 @@ from aiogram.types import Message, FSInputFile
 from aiogram.utils.markdown import hlink
 from googlesearch import search
 
+
 from .crud import get_all_exhibits_by_route, get_exhibit, get_route_by_id
 from .keyboards import make_row_keyboard
 from .utils import Route
+
+
+def delete_tags(string: str) -> str:
+    """Удаляет лишные теги."""
+    string = bleach.clean(
+            string, tags=['u', 'strong', 'em'], strip=True
+        ).replace('\n', '', 1)
+    return string
 
 
 async def get_id_from_state(state: FSMContext) -> tuple[str, int]:
@@ -76,7 +86,7 @@ async def set_route(state: FSMContext, message: Message) -> None:
         await state.update_data(exhibit=exhibit)
         if exhibit.transfer_message != "":
             await message.answer(
-                f"{exhibit.transfer_message.replace('<p>', '').replace('</p>', '')}",
+                f"{delete_tags(exhibit.transfer_message)}",
                 reply_markup=make_row_keyboard(["Отлично идем дальше"]),
             )
         await state.set_state(Route.transition)
@@ -94,16 +104,17 @@ async def get_tag_from_description(description: str) -> str:
     гугла по-заданному хеш-тегу
     4. Возвращаем ссылку
     """
+    description = delete_tags(description)
     pattern = re.search(r'#\w+', description)
     if pattern is None:
-        return description.replace('<p>', '').replace('</p>', '')
+        return description
     text = pattern.group()
     for i in search(text, lang='ru'):
         url = i
         break
     new_text = hlink(text, url)
     return description.replace(
-        text, new_text).replace('<p>', '').replace('</p>', '')
+        text, new_text)
 
 
 async def send_photo(message: Message, image: FSInputFile) -> None:
