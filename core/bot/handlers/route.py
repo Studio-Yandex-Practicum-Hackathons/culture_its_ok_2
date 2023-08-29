@@ -339,10 +339,17 @@ async def review(message: Message, state: FSMContext) -> None:
 async def resend_review(
     callback: types.CallbackQuery, state: FSMContext
 ) -> None:
+    logger.info('Start func')
     await callback.answer()
     await callback.message.edit_reply_markup()
+    # current_state = await state.get_state()
+    # if current_state == 'Route:review':
+    current_state = await state.get_state()
+    logger.info(current_state)
     await callback.message.answer(ms.WRITE_YOUR_OPINION)
-    await state.set_state(Route.review)
+    # else:
+        # await callback.message.answer('Эта кнопка устарела')
+    # await state.set_state(Route.review)
 
 
 @route_router.callback_query(F.data == "dont_send_review")
