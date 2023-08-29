@@ -1,6 +1,6 @@
-from django.utils.safestring import mark_safe
 from ckeditor.fields import RichTextField
 from django.db import models
+from django.utils.safestring import mark_safe
 from PIL import Image, ImageOps
 
 

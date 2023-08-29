@@ -1,16 +1,15 @@
 """Файл с основными функциями, которые нужны для чистоты кода."""
 import io
 import re
-import bleach
 
+import bleach
 import soundfile as sf
 import speech_recognition as speech_r
 from aiogram.exceptions import TelegramNetworkError
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, FSInputFile
+from aiogram.types import FSInputFile, Message
 from aiogram.utils.markdown import hlink
 from googlesearch import search
-
 
 from .crud import get_exhibit, get_route_by_id
 from .keyboards import make_row_keyboard
@@ -127,3 +126,5 @@ async def send_photo(message: Message, image: FSInputFile) -> None:
         await message.answer_photo(image)
     except TelegramNetworkError:
         await message.answer('Фото нет в media')
+    except Exception as e:
+        await message.answer(e)
