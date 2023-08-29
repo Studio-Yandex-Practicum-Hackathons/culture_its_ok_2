@@ -354,8 +354,11 @@ async def resend_review(
 ) -> None:
     await callback.answer()
     await callback.message.edit_reply_markup()
-    await callback.message.answer(ms.WRITE_YOUR_OPINION)
-    await state.set_state(Route.review)
+    current_state = await state.get_state()
+    if current_state == "Route:review":
+        await callback.message.answer(ms.WRITE_YOUR_OPINION)
+    else:
+        await callback.message.answer(ms.BUTTON_NOT_WORK)
 
 
 @route_router.callback_query(F.data == "dont_send_review")
@@ -364,11 +367,15 @@ async def skip_send_review(
 ) -> None:
     await callback.answer()
     await callback.message.edit_reply_markup()
-    await callback.message.answer(
-        'Очень жаль 😕',
-        reply_markup=make_row_keyboard(["Идем дальше"]),
-    )
-    await set_route(state, callback.message)
+    current_state = await state.get_state()
+    if current_state == 'Route:review':
+        await callback.message.answer(
+            'Очень жаль 😕',
+            reply_markup=make_row_keyboard(["Идем дальше"]),
+        )
+        await set_route(state, callback.message)
+    else:
+        await callback.message.answer(ms.BUTTON_NOT_WORK)
 
 
 @route_router.callback_query(Route.transition, F.data == "in_place")
