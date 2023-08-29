@@ -4,7 +4,7 @@ from aiogram.types import Message
 
 from .. import message as ms
 from ..keyboards import HOBBY, MAIN_COMMANDS, make_vertical_keyboard
-from ..utils import User
+from ..utils import User, Route
 from ..validators import check_age, check_name
 
 meetings_router = Router()
@@ -55,7 +55,7 @@ async def get_hobby_list(message: Message, state: FSMContext) -> None:
         ms.END_ACQUAINTANCE.format(name),
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)
     )
-    await state.set_state(None)
+    await state.set_state(Route.start)
 
 
 @meetings_router.message(User.hobby,)
@@ -68,4 +68,4 @@ async def get_hobby(message: Message, state: FSMContext) -> None:
         ms.END_ACQUAINTANCE.format(name),
         reply_markup=make_vertical_keyboard(MAIN_COMMANDS)
     )
-    await state.set_state(None)
+    await state.set_state(Route.start)

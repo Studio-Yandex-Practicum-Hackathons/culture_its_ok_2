@@ -1,28 +1,26 @@
 import asyncio
 import io
 import random
-import emoji
 
-from aiogram import F, Router, types, Bot
+from aiogram import Bot, F, Router, types
 from aiogram.enums import ChatAction
-from aiogram.enums.parse_mode import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (FSInputFile, Message, ReplyKeyboardMarkup,
                            ReplyKeyboardRemove)
-from aiogram.utils.markdown import code, italic, text
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import RequestError, UnknownValueError
 
 from .. import constants as const
 from .. import message as ms
-from ..config import MAXIMUM_DURATION_VOICE_MESSAGE, logger
+from ..config import MAXIMUM_DURATION_VOICE_MESSAGE, URL_TABLE_FEEDBACK, logger
 from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
-                    get_routes_id, save_review)
+                    get_routes_id, save_review, get_all_photos_by_exhibit)
 from ..exceptions import FeedbackError
-from ..functions import (get_exhibit_from_state, get_id_from_state,
-                         get_route_from_state, set_route,
-                         speech_to_text_conversion)
+from ..functions import (delete_tags, get_exhibit_from_state,
+                         get_id_from_state,
+                         get_route_from_state, get_tag_from_description,
+                         set_route, speech_to_text_conversion, send_photo,)
 from ..keyboards import (KEYBOARD_YES_NO, keyboard_for_send_review,
                          keyboard_for_transition, keyboard_yes,
                          make_row_keyboard, make_vertical_keyboard)
@@ -33,16 +31,20 @@ route_router = Router()
 
 
 @route_router.message(Command("routes"))
+@route_router.message(Route.start, F.text == "Маршруты")
 async def command_routes(message: Message, state: FSMContext) -> None:
     """Команда /routes . Предлагает выбрать маршрут."""
     keybord = []
     for route in await get_routes_id():
         keybord.append(const.ROUTE + str(route))
+    if not keybord:
+        await message.answer('На данный момент нет доступных маршрутов')
+        return
     await message.reply(
          text=ms.CHOOSE_ROUTE_MESSAGE,
          reply_markup=make_vertical_keyboard(keybord),
     )
-    await state.set_state(Route.route)
+    await state.set_state(Route.choose)
 
 
 @route_router.message(Route.route,  F.text.regexp(r"\d+"))
@@ -83,7 +85,7 @@ async def start_route_no(message: Message, state: FSMContext) -> None:
         ms.ROUTE_MAP
     )
     image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
-    await message.answer_photo(image)
+    await send_photo(message, image)
     await message.answer(
         ms.CHECK_START_MEDITATION.format(route.address),
         reply_markup=keyboard_yes(),
@@ -100,7 +102,7 @@ async def start_route_yes(message: Message, state: FSMContext) -> None:
     exhibit = await get_exhibit_from_state(state)
     if exhibit.message_before_description != "":
         await message.answer(
-            f"{exhibit.message_before_description}",
+            f"{delete_tags(exhibit.message_before_description)}",
             reply_markup=ReplyKeyboardRemove(),
         )
         await state.set_state(Route.podvodka)
@@ -116,7 +118,7 @@ async def route_info_start(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     route = data.get("route_obj")
     await message.answer(
-        ms.EXHIBIT_SELECTION.format(route.address)
+        ms.EXHIBIT_SELECTION.format(delete_tags(route.address))
     )
     await message.answer(
         ms.START_ROUTE_MESSAGE,
@@ -128,22 +130,33 @@ async def route_info_start(message: Message, state: FSMContext) -> None:
     await state.set_state(Route.route)
 
 
-@route_router.message(Route.route)
+@route_router.message(Route.choose)
 async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
     """Начало пути """
 
     await state.set_state(Block.block)
     route_id = message.text.split(" ")[-1]
     try:
+        route_id = int(route_id)
+    except ValueError:
+        await message.answer("Не получилось преобразовать в номер маршрута")
+        await message.answer("Повторите попытку")
+        await state.set_state(Route.choose)
+        return
+    try:
         route = await get_route_by_id(route_id)
     except ObjectDoesNotExist:
         logger.error("Пользователь ввел название маршрута, которого нет в бд.")
         await message.answer(
-            ms.ROUTE_SELECTION_ERROR
+            ms.ROUTE_ERROR
         )
+        await state.set_state(Route.choose)
         return
     await message.answer(
-        ms.ROUTE_DESCRIPTION.format(route.name, route.description),
+        ms.ROUTE_DESCRIPTION.format(
+            route.name,
+            delete_tags(route.description)
+        ),
         reply_markup=ReplyKeyboardRemove()
     )
     await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
@@ -153,20 +166,19 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
         ms.NUMBER_EXHIBITS_IN_ROUTE.format(count_exhibits)
     )
 
-    await message.answer(
-        ms.ROUTE_COVER
-    )
     image = FSInputFile(path=const.PATH_MEDIA + str(route.image))
-    await message.answer_photo(image)
+
+    await send_photo(message, image)
 
     await bot.send_chat_action(message.chat.id, ChatAction.UPLOAD_PHOTO)
-    await asyncio.sleep(10)
+    await asyncio.sleep(5)
 
     await message.answer(
         ms.ROUTE_MAP
     )
+
     image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
-    await message.answer_photo(image)
+    await send_photo(message, image)
 
     await state.update_data(route=route_id)
     await state.update_data(exhibit_number=0)
@@ -180,11 +192,14 @@ async def route_info(message: Message, state: FSMContext, bot: Bot) -> None:
     await asyncio.sleep(const.SLEEP_3)
 
     if route.text_route_start != "":
-        await message.answer(f"{route.text_route_start}")
+        await message.answer(
+            f"{delete_tags(route.text_route_start)}",
+            reply_markup=make_row_keyboard(["Хорошо"]),
+        )
         await state.set_state(Route.route_start)
         return
     await message.answer(
-        ms.EXHIBIT_SELECTION.format(route.address)
+        ms.EXHIBIT_SELECTION.format(delete_tags(route.address))
     )
     await message.answer(
         ms.START_ROUTE_MESSAGE,
@@ -211,7 +226,7 @@ async def refleksia_no(message: Message, state: FSMContext) -> None:
     await state.update_data(answer_to_reflection=message.text)
     if exhibit.reflection_negative != "":
         await message.answer(
-            f"{exhibit.reflection_negative}",
+            f"{delete_tags(exhibit.reflection_negative)}",
             reply_markup=ReplyKeyboardRemove(),
         )
     else:
@@ -220,8 +235,8 @@ async def refleksia_no(message: Message, state: FSMContext) -> None:
         )
     await message.answer(
         ms.REVIEW_ASK,
-        reply_markup=keyboard_for_send_review()
     )
+    await state.set_state(Route.review)
 
 
 # пока что только любой текст кроме слова нет
@@ -231,13 +246,13 @@ async def refleksia_yes(message: Message, state: FSMContext) -> None:
     exhibit = await get_exhibit_from_state(state)
     await state.update_data(answer_to_reflection=message.text)
     await message.answer(
-        f"{exhibit.reflection_positive}",
+        f"{delete_tags(exhibit.reflection_positive)}",
         reply_markup=ReplyKeyboardRemove(),
     )
     await message.answer(
         ms.REVIEW_ASK,
-        reply_markup=keyboard_for_send_review()
     )
+    await state.set_state(Route.review)
 
 
 @route_router.message(
@@ -259,21 +274,24 @@ async def exhibit_info(message: Message, state: FSMContext, bot: Bot) -> None:
     exhibit = await get_exhibit_from_state(state)
 
     await message.answer(
-        f"{exhibit.description}",
+        await get_tag_from_description(exhibit.description),
         reply_markup=ReplyKeyboardRemove(),
     )
 
-    await asyncio.sleep(const.SLEEP_3)
     await bot.send_chat_action(message.chat.id, ChatAction.UPLOAD_PHOTO)
-    image = FSInputFile(path=const.PATH_MEDIA + str(exhibit.image))
-    await message.answer_photo(image)
+    await asyncio.sleep(const.SLEEP_3)
+    photos = await get_all_photos_by_exhibit(exhibit)
+    for photo in photos:
+        image = FSInputFile(path=const.PATH_MEDIA + str(photo.image))
+        await asyncio.sleep(1)
+        await send_photo(message, image)
 
     await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
     await asyncio.sleep(const.SLEEP_10)
 
     if exhibit.reflection != "":
         await message.answer(
-            f"{exhibit.reflection}",
+            f"{delete_tags(exhibit.reflection)}",
             reply_markup=ReplyKeyboardMarkup(
                 keyboard=KEYBOARD_YES_NO,
                 resize_keyboard=True,
@@ -284,8 +302,8 @@ async def exhibit_info(message: Message, state: FSMContext, bot: Bot) -> None:
         await state.update_data(answer_to_reflection=const.NOT_REFLAKSIA)
         await message.answer(
             ms.REVIEW_ASK,
-            reply_markup=keyboard_for_send_review()
         )
+        await state.set_state(Route.review)
 
 
 @route_router.message(Route.review, F.text | F.voice)
@@ -320,7 +338,10 @@ async def review(message: Message, state: FSMContext) -> None:
     if not answer:
         await save_review(text, state)
         answer = ms.SUCCESSFUL_MESSAGE
-        await message.answer(text=answer)
+        await message.answer(
+            text=answer,
+            reply_markup=make_row_keyboard(["Отлично идем дальше"]),
+        )
         await set_route(state, message)
     else:
         await message.answer(text=ms.REVIEW_ERROR.format(answer),
@@ -343,6 +364,10 @@ async def skip_send_review(
 ) -> None:
     await callback.answer()
     await callback.message.edit_reply_markup()
+    await callback.message.answer(
+        'Очень жаль 😕',
+        reply_markup=make_row_keyboard(["Идем дальше"]),
+    )
     await set_route(state, callback.message)
 
 
@@ -356,7 +381,7 @@ async def in_place(
     exhibit_obj = await get_exhibit_from_state(state)
     if exhibit_obj.message_before_description != "":
         await callback.message.answer(
-            f"{exhibit_obj.message_before_description}",
+            f"{delete_tags(exhibit_obj.message_before_description)}",
             reply_markup=ReplyKeyboardRemove()
         )
         await state.set_state(Route.podvodka)
@@ -374,9 +399,9 @@ async def show_route(callback: types.CallbackQuery, state: FSMContext) -> None:
     route = data.get("route_obj")
     image = FSInputFile(path=const.PATH_MEDIA + str(route.route_map))
     await callback.message.answer(
-        "Вот карта маршрута, надесюсь она вам поможет"
+        "Вот карта маршрута, надеюсь она вам поможет"
     )
-    await callback.message.answer_photo(image)
+    await send_photo(callback.message, image)
 
 
 @route_router.message(Route.transition, F.text)
@@ -385,7 +410,8 @@ async def transition(message: Message, state: FSMContext) -> None:
     exhibit_obj = await get_exhibit_from_state(state)
     await message.answer(
         ms.INFO_NEXT_OBJECT.format(
-            exhibit_obj.address, exhibit_obj.how_to_pass
+            delete_tags(exhibit_obj.address),
+            delete_tags(exhibit_obj.how_to_pass)
         ),
         reply_markup=ReplyKeyboardRemove()
     )
@@ -414,7 +440,7 @@ async def leave_route(message: Message, state: FSMContext) -> None:
 @route_router.message(Route.quiz, F.text == "Конец")
 async def end_route(message: Message, state: FSMContext) -> None:
     """Конец маршрута"""
-    await message.answer(ms.RESPONSE_MESSAGE)
+    await message.answer(ms.RESPONSE_MESSAGE.format(URL_TABLE_FEEDBACK))
     await message.answer(
         ms.RETURN_TO_ROUTES,
         reply_markup=ReplyKeyboardMarkup(
@@ -422,26 +448,3 @@ async def end_route(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         )
     )
-
-
-@route_router.message(F.text)
-async def unknown_text(message: Message) -> None:
-    """Ловит все сообщения от пользователя,
-    если они не попадают под условиях функций выше.
-    """
-    pass
-    # await message.answer("Я тебя не понимаю, попробую использовать команды.")
-
-
-@route_router.message(F.content_type.ANY)
-async def unknown_message(message: Message) -> None:
-    """Ответ не на текст."""
-    await message.reply(emoji.emojize(":astonished:", language="alias"),)
-    message_text = text(
-        "Я не знаю, что с этим делать ",
-        italic("\nЯ просто напомню,"), "что есть",
-        code("команда"), "/help",
-    )
-    await message.reply(message_text, parse_mode=ParseMode.MARKDOWN)
-    await message.answer_dice("⚽")
-    await message.answer_dice("🎰")

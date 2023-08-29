@@ -10,7 +10,7 @@ services:
 
   web:
     container_name: web_2
-    image: arseny13/culture_bot:v1.1
+    image: arseny13/culture_bot:latest
     restart: always
     volumes:
       - static_value:/app/core/static/
@@ -24,7 +24,7 @@ services:
     container_name: nginx_2
     image: nginx:1.21.3-alpine
     ports:
-      - "80:80"
+      - "80:20"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - static_value:/var/html/static/
@@ -34,7 +34,7 @@ services:
 
   bot:
     container_name: bot_2
-    image: arseny13/culture_bot:v1.1
+    image: arseny13/culture_bot:latest
     restart: always
     working_dir: "/app/core"
     command: python manage.py bot

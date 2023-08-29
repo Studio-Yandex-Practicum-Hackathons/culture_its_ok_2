@@ -36,12 +36,13 @@ async def end_bot(bot: Bot) -> None:
 
 
 @main_router.message(Command("help"))
+@main_router.message(F.text == "Помощь")
 async def help_info(message: Message) -> None:
     """Команда /help выводит все возможные команды."""
     commands = {
         "/start": "Нажмите для приветсвеного сообщения",
-        "/routes": "Нажмите для выбора маршрута",
-        "/cancel": "Нажмите для отмены команды",
+        "/routes или Маршруты": "Нажмите для выбора маршрута",
+        "/cancel или Помощь": "Нажмите для отмены команды",
         "/help": "Нажмите для просмотра доступных команд"
     }
     text = ''
