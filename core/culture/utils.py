@@ -110,7 +110,8 @@ def update_spreadsheet(reviews):
 
 
 def prepare_image(image, filepath):
-    """Подготовка изображения перед сохранением в базу данных"""
+    """Обработка изображения перед сохранением в базу данных"""
+
     img = Image.open(image)
     fixed_width = 1080
     img = Image.open(filepath)
@@ -118,5 +119,6 @@ def prepare_image(image, filepath):
     width_percent = fixed_width / float(img.size[0])
     height_size = int((float(img.size[1]) * float(width_percent)))
     new_image = img.resize((fixed_width, height_size))
-    new_image = new_image.convert('RGB')
-    new_image.save(filepath, 'JPEG')
+    if new_image.format != "JPEG":
+        new_image = new_image.convert("RGB")
+    new_image.save(filepath, "JPEG")

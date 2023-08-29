@@ -7,22 +7,35 @@ from rangefilter.filters import (
 
 from .models import (
     Exhibit, FeedBack, Review, Route,
-    Photo, RouteExhibit, ExhibitPhoto)
+    Photo, RouteExhibit, ExhibitPhoto
+)
 from .utils import generate_pdf, update_spreadsheet
 
 
 class ExhibitInline(admin.TabularInline):
+    """Класс, определяющий встраиваемую модель RouteExhibit
+    в административном интерфейсе маршрута.
+    """
+
     model = RouteExhibit
     extra = 1
 
 
 class PhotoInline(admin.TabularInline):
+    """Класс, определяющий встраиваемую модель ExhibitPhoto
+    в административном интерфейсе объекта экспоната.
+    """
+
     model = ExhibitPhoto
     extra = 1
 
 
 @admin.register(Photo)
 class PhotoAdmin(admin.ModelAdmin):
+    """Класс, определяющий настройки модели Photo
+    в административном интерфейсе.
+    """
+
     readonly_fields = ["img_preview"]
     list_display = (
         "pk",
@@ -33,6 +46,10 @@ class PhotoAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
+    """Класс, определяющий настройки модели Review
+    в административном интерфейсе.
+    """
+
     list_display = (
         "pk",
         "username",
@@ -62,6 +79,10 @@ class ReviewAdmin(admin.ModelAdmin):
 
 @admin.register(Exhibit)
 class ExhibitAdmin(admin.ModelAdmin):
+    """Класс, определяющий настройки модели
+    Exhibit в административном интерфейсе.
+    """
+
     list_display = (
         "pk",
         "author",
@@ -75,6 +96,10 @@ class ExhibitAdmin(admin.ModelAdmin):
 
 @admin.register(FeedBack)
 class FeedBackAdmin(admin.ModelAdmin):
+    """Класс, определяющий настройки модели FeedBack
+    в административном интерфейсе.
+    """
+
     list_display = (
         "pk",
         "email",
@@ -87,6 +112,9 @@ class FeedBackAdmin(admin.ModelAdmin):
 
 @admin.register(Route)
 class RouteAdmin(admin.ModelAdmin):
+    """Класс, определяющий настройки модели Route
+    в административном интерфейсе."""
+
     list_display = (
         "pk",
         "name",

@@ -27,7 +27,10 @@ class PreBase(models.Model):
 
 
 class Route(PreBase):
-    """Модель для описания маршрутов"""
+    """Модель для описания маршрутов.
+    Эта модель связана с моделью Exhibit посредством модели RouteExhibit.
+    """
+
     image = models.ImageField(
         upload_to="routes",
         verbose_name="Фото",
@@ -47,7 +50,8 @@ class Route(PreBase):
     )
 
     def save(self, *args, **kwargs):
-        """Изменяется разрешение изображения"""
+        """Обработка изображения перед сохранением в базу данных"""
+
         super(Route, self).save(*args, **kwargs)
 
         if self.image:
@@ -68,7 +72,9 @@ class Route(PreBase):
 
 
 class Exhibit(PreBase):
-    """Модель для описания объектов"""
+    """Модель для описания объектов.
+    Эта модель связана с моделью Photo посредством модели ExhibitPhoto.
+    """
 
     author = models.CharField(
         max_length=100,
@@ -140,6 +146,8 @@ class RouteExhibit(models.Model):
 
 
 class Photo(models.Model):
+    """Модель для фотографий объектов"""
+
     image = models.ImageField(
         upload_to="exhibit",
         verbose_name="Фото",
@@ -147,6 +155,7 @@ class Photo(models.Model):
 
     def save(self, *args, **kwargs):
         """Изменяется разрешение изображения"""
+
         super(Photo, self).save(*args, **kwargs)
 
         if self.image:
@@ -187,7 +196,9 @@ class ExhibitPhoto(models.Model):
 
 
 class Review(models.Model):
-    """Модель для отзывов пользователя"""
+    """Модель для отзывов пользователя.
+    Модель связана с моделью Exhibit
+    """
 
     username = models.CharField(
         max_length=100,
@@ -235,7 +246,9 @@ class Review(models.Model):
 
 
 class FeedBack(models.Model):
-    """Модель для опросов пользователя"""
+    """Модель для опросов пользователя.
+    Модель связана с моделью Route
+    """
 
     email = models.EmailField(max_length=254, unique=True)
     route = models.ForeignKey(
