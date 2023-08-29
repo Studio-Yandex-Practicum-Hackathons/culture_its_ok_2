@@ -1,7 +1,9 @@
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils.safestring import mark_safe
-from PIL import Image, ImageOps
+
+from .utils import prepare_image
+
 
 
 class PreBase(models.Model):
@@ -26,7 +28,10 @@ class PreBase(models.Model):
 
 
 class Route(PreBase):
-    """Модель для описания маршрутов"""
+    """Модель для описания маршрутов.
+    Эта модель связана с моделью Exhibit посредством модели RouteExhibit.
+    """
+
     image = models.ImageField(
         upload_to="routes",
         verbose_name="Фото",
@@ -46,28 +51,17 @@ class Route(PreBase):
     )
 
     def save(self, *args, **kwargs):
-        """Изменяется раширение изображения?"""
+        """Обработка изображения перед сохранением в базу данных"""
+
         super(Route, self).save(*args, **kwargs)
 
         if self.image:
-            fixed_width = 1080
             filepath = self.image.path
-            img = Image.open(filepath)
-            img = ImageOps.exif_transpose(img)
-            width_percent = fixed_width / float(img.size[0])
-            height_size = int((float(img.size[1]) * float(width_percent)))
-            new_image = img.resize((fixed_width, height_size))
-            new_image.save(filepath)
+            prepare_image(self.image, filepath)
 
         if self.route_map:
-            fixed_width = 1080
             filepath = self.route_map.path
-            img = Image.open(filepath)
-            img = ImageOps.exif_transpose(img)
-            width_percent = fixed_width / float(img.size[0])
-            height_size = int((float(img.size[1]) * float(width_percent)))
-            new_image = img.resize((fixed_width, height_size))
-            new_image.save(filepath)
+            prepare_image(self.route_map, filepath)
 
     class Meta:
         ordering = ["id"]
@@ -79,7 +73,9 @@ class Route(PreBase):
 
 
 class Exhibit(PreBase):
-    """Модель для описания объектов"""
+    """Модель для описания объектов.
+    Эта модель связана с моделью Photo посредством модели ExhibitPhoto.
+    """
 
     author = models.CharField(
         max_length=100,
@@ -151,28 +147,28 @@ class RouteExhibit(models.Model):
 
 
 class Photo(models.Model):
+    """Модель для фотографий объектов"""
+
     image = models.ImageField(
         upload_to="exhibit",
         verbose_name="Фото",
     )
 
     def save(self, *args, **kwargs):
-        """Изменяется раширение изображения?"""
+        """Изменяется разрешение изображения"""
+
         super(Photo, self).save(*args, **kwargs)
 
         if self.image:
-            fixed_width = 1080
             filepath = self.image.path
-            img = Image.open(filepath)
-            img = ImageOps.exif_transpose(img)
-            width_percent = fixed_width / float(img.size[0])
-            height_size = int((float(img.size[1]) * float(width_percent)))
-            new_image = img.resize((fixed_width, height_size))
-            new_image.save(filepath)
+            prepare_image(self.image, filepath)
 
     def img_preview(self):
         return mark_safe(
             f'<img src="{self.image.url}" style="max-height: 300px;">')
+
+    def __str__(self):
+        return f"Фото {self.pk}"
 
 
 class ExhibitPhoto(models.Model):
@@ -201,7 +197,9 @@ class ExhibitPhoto(models.Model):
 
 
 class Review(models.Model):
-    """Модель для отзывов пользователя"""
+    """Модель для отзывов пользователя.
+    Модель связана с моделью Exhibit
+    """
 
     username = models.CharField(
         max_length=100,
@@ -249,7 +247,9 @@ class Review(models.Model):
 
 
 class FeedBack(models.Model):
-    """Модель для опросов пользователя"""
+    """Модель для опросов пользователя.
+    Модель связана с моделью Route
+    """
 
     email = models.EmailField(max_length=254, unique=True)
     route = models.ForeignKey(

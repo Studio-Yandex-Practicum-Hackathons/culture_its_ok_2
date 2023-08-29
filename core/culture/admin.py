@@ -9,18 +9,27 @@ from .utils import generate_pdf, update_spreadsheet
 
 
 class ExhibitInline(admin.TabularInline):
+    """Класс, определяющий встраиваемую модель RouteExhibit
+    в административном интерфейсе маршрута.
+    """
+
     model = RouteExhibit
     extra = 1
 
 
 class PhotoInline(admin.TabularInline):
+    """Класс, определяющий встраиваемую модель ExhibitPhoto
+    в административном интерфейсе объекта экспоната.
+    """
+
     model = ExhibitPhoto
     extra = 1
 
 
 @admin.register(Route)
 class RouteAdmin(admin.ModelAdmin):
-    """Класс админки для Route."""
+     """Класс, определяющий настройки модели Route
+    в административном интерфейсе."""
     list_display = (
         "pk",
         "name",
@@ -42,7 +51,9 @@ class RouteAdmin(admin.ModelAdmin):
 
 @admin.register(Exhibit)
 class ExhibitAdmin(admin.ModelAdmin):
-    """Класс админки для Exhibite."""
+    """Класс, определяющий настройки модели
+    Exhibit в административном интерфейсе.
+    """
     list_display = (
         "pk",
         "author",
@@ -56,7 +67,9 @@ class ExhibitAdmin(admin.ModelAdmin):
 
 @admin.register(Photo)
 class PhotoAdmin(admin.ModelAdmin):
-    """Класс админки для Photo."""
+    """Класс, определяющий настройки модели Photo
+    в административном интерфейсе.
+    """
     readonly_fields = ["img_preview"]
     list_display = (
         "pk",
@@ -67,7 +80,9 @@ class PhotoAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    """Класс админки для Review."""
+    """Класс, определяющий настройки модели Review
+    в административном интерфейсе.
+    """
     list_display = (
         "pk",
         "username",
@@ -97,7 +112,9 @@ class ReviewAdmin(admin.ModelAdmin):
 
 @admin.register(FeedBack)
 class FeedBackAdmin(admin.ModelAdmin):
-    """Класс админки для FeedBack."""
+    """Класс, определяющий настройки модели FeedBack
+    в административном интерфейсе.
+    """
     list_display = (
         "pk",
         "email",
