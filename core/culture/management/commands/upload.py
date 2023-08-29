@@ -8,7 +8,7 @@ from docx import Document
 from docx.text.paragraph import Paragraph
 
 from core.settings import BASE_DIR
-from culture.models import Exhibit, Route
+from culture.models import Exhibit, Route, ExhibitPhoto
 
 FIELDS = {
     'маршрут': ('name', '.'),
