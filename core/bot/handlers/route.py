@@ -14,13 +14,13 @@ from speech_recognition.exceptions import RequestError, UnknownValueError
 from .. import constants as const
 from .. import message as ms
 from ..config import MAXIMUM_DURATION_VOICE_MESSAGE, URL_TABLE_FEEDBACK, logger
-from ..crud import (get_all_exhibits_by_route, get_exhibit, get_route_by_id,
-                    get_routes_id, save_review, get_all_photos_by_exhibit)
+from ..crud import (get_all_exhibits_by_route, get_all_photos_by_exhibit,
+                    get_exhibit, get_route_by_id, get_routes_id, save_review)
 from ..exceptions import FeedbackError
 from ..functions import (delete_tags, get_exhibit_from_state,
-                         get_id_from_state,
-                         get_route_from_state, get_tag_from_description,
-                         set_route, speech_to_text_conversion, send_photo,)
+                         get_id_from_state, get_route_from_state,
+                         get_tag_from_description, send_photo, set_route,
+                         speech_to_text_conversion)
 from ..keyboards import (KEYBOARD_YES_NO, keyboard_for_send_review,
                          keyboard_for_transition, keyboard_yes,
                          make_row_keyboard, make_vertical_keyboard)
@@ -354,8 +354,11 @@ async def resend_review(
 ) -> None:
     await callback.answer()
     await callback.message.edit_reply_markup()
-    await callback.message.answer(ms.WRITE_YOUR_OPINION)
-    await state.set_state(Route.review)
+    current_state = await state.get_state()
+    if current_state == "Route:review":
+        await callback.message.answer(ms.WRITE_YOUR_OPINION)
+    else:
+        await callback.message.answer(ms.BUTTON_NOT_WORK)
 
 
 @route_router.callback_query(F.data == "dont_send_review")
@@ -364,11 +367,15 @@ async def skip_send_review(
 ) -> None:
     await callback.answer()
     await callback.message.edit_reply_markup()
-    await callback.message.answer(
-        'Очень жаль 😕',
-        reply_markup=make_row_keyboard(["Идем дальше"]),
-    )
-    await set_route(state, callback.message)
+    current_state = await state.get_state()
+    if current_state == 'Route:review':
+        await callback.message.answer(
+            'Очень жаль 😕',
+            reply_markup=make_row_keyboard(["Идем дальше"]),
+        )
+        await set_route(state, callback.message)
+    else:
+        await callback.message.answer(ms.BUTTON_NOT_WORK)
 
 
 @route_router.callback_query(Route.transition, F.data == "in_place")

@@ -4,7 +4,7 @@ from aiogram.types import Message
 
 from .. import message as ms
 from ..keyboards import HOBBY, MAIN_COMMANDS, make_vertical_keyboard
-from ..utils import User, Route
+from ..utils import Route, User
 from ..validators import check_age, check_name
 
 meetings_router = Router()
