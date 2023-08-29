@@ -359,6 +359,7 @@ async def resend_review(
         await callback.message.answer(ms.WRITE_YOUR_OPINION)
     else:
         await callback.message.answer(ms.BUTTON_NOT_WORK)
+    await state.set_state(Route.review)
 
 
 @route_router.callback_query(F.data == "dont_send_review")

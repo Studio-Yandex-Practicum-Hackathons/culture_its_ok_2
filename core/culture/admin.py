@@ -28,7 +28,7 @@ class PhotoInline(admin.TabularInline):
 
 @admin.register(Route)
 class RouteAdmin(admin.ModelAdmin):
-     """Класс, определяющий настройки модели Route
+    """Класс, определяющий настройки модели Route
     в административном интерфейсе."""
     list_display = (
         "pk",

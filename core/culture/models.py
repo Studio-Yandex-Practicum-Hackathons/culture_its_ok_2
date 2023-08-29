@@ -5,7 +5,6 @@ from django.utils.safestring import mark_safe
 from .utils import prepare_image
 
 
-
 class PreBase(models.Model):
     """Родительская модель для маршрутов и экспонатов"""
 
