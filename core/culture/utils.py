@@ -5,6 +5,7 @@ from io import BytesIO
 from django.conf import settings
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from PIL import Image, ImageOps
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
@@ -106,3 +107,16 @@ def update_spreadsheet(reviews):
         valueInputOption="USER_ENTERED",
         body={"values": data},
     ).execute()
+
+
+def prepare_image(image, filepath):
+    """Подготовка изображения перед сохранением в базу данных"""
+    img = Image.open(image)
+    fixed_width = 1080
+    img = Image.open(filepath)
+    img = ImageOps.exif_transpose(img)
+    width_percent = fixed_width / float(img.size[0])
+    height_size = int((float(img.size[1]) * float(width_percent)))
+    new_image = img.resize((fixed_width, height_size))
+    new_image = new_image.convert('RGB')
+    new_image.save(filepath, 'JPEG')

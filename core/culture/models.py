@@ -1,7 +1,8 @@
-from django.utils.safestring import mark_safe
 from ckeditor.fields import RichTextField
 from django.db import models
-from PIL import Image, ImageOps
+from django.utils.safestring import mark_safe
+
+from .utils import prepare_image
 
 
 class PreBase(models.Model):
@@ -46,28 +47,16 @@ class Route(PreBase):
     )
 
     def save(self, *args, **kwargs):
-        """Изменяется раширение изображения?"""
+        """Изменяется разрешение изображения"""
         super(Route, self).save(*args, **kwargs)
 
         if self.image:
-            fixed_width = 1080
             filepath = self.image.path
-            img = Image.open(filepath)
-            img = ImageOps.exif_transpose(img)
-            width_percent = fixed_width / float(img.size[0])
-            height_size = int((float(img.size[1]) * float(width_percent)))
-            new_image = img.resize((fixed_width, height_size))
-            new_image.save(filepath)
+            prepare_image(self.image, filepath)
 
         if self.route_map:
-            fixed_width = 1080
             filepath = self.route_map.path
-            img = Image.open(filepath)
-            img = ImageOps.exif_transpose(img)
-            width_percent = fixed_width / float(img.size[0])
-            height_size = int((float(img.size[1]) * float(width_percent)))
-            new_image = img.resize((fixed_width, height_size))
-            new_image.save(filepath)
+            prepare_image(self.route_map, filepath)
 
     class Meta:
         ordering = ["id"]
@@ -157,22 +146,19 @@ class Photo(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        """Изменяется раширение изображения?"""
+        """Изменяется разрешение изображения"""
         super(Photo, self).save(*args, **kwargs)
 
         if self.image:
-            fixed_width = 1080
             filepath = self.image.path
-            img = Image.open(filepath)
-            img = ImageOps.exif_transpose(img)
-            width_percent = fixed_width / float(img.size[0])
-            height_size = int((float(img.size[1]) * float(width_percent)))
-            new_image = img.resize((fixed_width, height_size))
-            new_image.save(filepath)
+            prepare_image(self.image, filepath)
 
     def img_preview(self):
         return mark_safe(
             f'<img src="{self.image.url}" style="max-height: 300px;">')
+
+    def __str__(self):
+        return f"Фото {self.pk}"
 
 
 class ExhibitPhoto(models.Model):
