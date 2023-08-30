@@ -11,21 +11,30 @@ from aiogram.types import (FSInputFile, Message, ReplyKeyboardMarkup,
 from django.core.exceptions import ObjectDoesNotExist
 from speech_recognition.exceptions import RequestError, UnknownValueError
 
-from .. import constants as const
-from .. import message as ms
-from ..config import MAXIMUM_DURATION_VOICE_MESSAGE, URL_TABLE_FEEDBACK, logger
-from ..crud import (get_all_exhibits_by_route, get_all_photos_by_exhibit,
-                    get_exhibit, get_route_by_id, get_routes_id, save_review)
-from ..exceptions import FeedbackError
-from ..functions import (delete_tags, get_exhibit_from_state,
-                         get_id_from_state, get_route_from_state,
-                         get_tag_from_description, send_photo, set_route,
-                         speech_to_text_conversion)
-from ..keyboards import (KEYBOARD_YES_NO, keyboard_for_send_review,
-                         keyboard_for_transition, keyboard_yes,
-                         make_row_keyboard, make_vertical_keyboard)
-from ..utils import Block, Route
-from ..validators import rewiew_validator
+from bot import constants as const
+from bot import message as ms
+from bot.config import (
+    MAXIMUM_DURATION_VOICE_MESSAGE,
+    URL_TABLE_FEEDBACK, logger
+)
+from bot.crud import (
+    get_all_exhibits_by_route, get_all_photos_by_exhibit,
+    get_exhibit, get_route_by_id, get_routes_id, save_review
+)
+from bot.exceptions import FeedbackError
+from bot.functions import (
+    delete_tags, get_exhibit_from_state,
+    get_id_from_state, get_route_from_state,
+    get_tag_from_description, send_photo, set_route,
+    speech_to_text_conversion
+)
+from bot.keyboards import (
+    KEYBOARD_YES_NO, keyboard_for_send_review,
+    keyboard_for_transition, keyboard_yes,
+    make_row_keyboard, make_vertical_keyboard
+)
+from bot.utils import Block, Route
+from bot.validators import rewiew_validator
 
 route_router = Router()
 

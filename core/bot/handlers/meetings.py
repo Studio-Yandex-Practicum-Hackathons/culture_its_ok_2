@@ -2,10 +2,10 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from .. import message as ms
-from ..keyboards import HOBBY, MAIN_COMMANDS, make_vertical_keyboard
-from ..utils import Route, User
-from ..validators import check_age, check_name
+from bot import message as ms
+from bot.keyboards import HOBBY, MAIN_COMMANDS, make_vertical_keyboard
+from bot.utils import Route, User
+from bot.validators import check_age, check_name
 
 meetings_router = Router()
 

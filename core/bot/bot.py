@@ -3,8 +3,8 @@
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramServerError
 
-from .commands import main_router
-from .config import TELEGRAM_TOKEN, logger
+from bot.commands import main_router
+from bot.config import TELEGRAM_TOKEN, logger
 
 
 async def main() -> None:

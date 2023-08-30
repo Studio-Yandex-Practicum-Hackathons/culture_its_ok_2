@@ -11,9 +11,9 @@ from aiogram.types import FSInputFile, Message
 from aiogram.utils.markdown import hlink
 from googlesearch import search
 
-from .crud import get_exhibit, get_route_by_id
-from .keyboards import make_row_keyboard
-from .utils import Route
+from bot.crud import get_exhibit, get_route_by_id
+from bot.keyboards import make_row_keyboard
+from bot.utils import Route
 
 
 def delete_tags(string: str) -> str:

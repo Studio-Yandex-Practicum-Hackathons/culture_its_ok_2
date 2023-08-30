@@ -3,8 +3,8 @@ from typing import Any, Optional
 
 from django.core.management.base import BaseCommand
 
-from ...bot import main
-from ...config import logger
+from bot.bot import main
+from bot.config import logger
 
 
 class Command(BaseCommand):

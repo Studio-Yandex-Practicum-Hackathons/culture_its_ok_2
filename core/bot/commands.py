@@ -4,11 +4,11 @@ from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 
-from . import message as ms
-from .config import ADMIN_ID
-from .handlers import meetings_router, route_router
-from .keyboards import set_command
-from .utils import User
+from bot import message as ms
+from bot.config import ADMIN_ID
+from bot.handlers import meetings_router, route_router
+from bot.keyboards import set_command
+from bot.utils import User
 
 main_router = Router()
 main_router.include_router(meetings_router)

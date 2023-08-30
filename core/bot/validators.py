@@ -1,7 +1,7 @@
 import re
 
-from .config import MINIMUM_WORDS_REVIEW
-from .exceptions import FeedbackError
+from bot.config import MINIMUM_WORDS_REVIEW
+from bot.exceptions import FeedbackError
 
 
 async def check_name(name: str) -> bool:
