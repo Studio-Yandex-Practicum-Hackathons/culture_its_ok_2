@@ -74,9 +74,9 @@ async def set_route(state: FSMContext, message: Message) -> None:
     exhibit_number = int(user_data.get("exhibit_number"))
     exhibit_number += 1
     await state.update_data(exhibit_number=exhibit_number)
-    route = await get_route_by_id(route_id)
     count_exhibits = user_data.get("count_exhibits")
     if exhibit_number == count_exhibits:
+        route = await get_route_by_id(route_id)
         await message.answer(
             f"На этом медитация по маршруту «{route.name}» окончена.\n"
             "Администрация фестиваля «Ничего страшного» благодарит"
@@ -85,13 +85,13 @@ async def set_route(state: FSMContext, message: Message) -> None:
         )
         await state.set_state(Route.quiz)
     else:
-        exhibit = await get_exhibit(route_id, exhibit_number)
-        await state.update_data(exhibit=exhibit)
         if exhibit.transfer_message != "":
             await message.answer(
                 f"{delete_tags(exhibit.transfer_message)}",
                 reply_markup=make_row_keyboard(["Отлично идем дальше"]),
             )
+        exhibit = await get_exhibit(route_id, exhibit_number)
+        await state.update_data(exhibit=exhibit)
         await state.set_state(Route.transition)
 
 
