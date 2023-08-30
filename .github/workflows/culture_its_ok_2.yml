@@ -3,7 +3,7 @@ name: culture_its_ok_2
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "master" ]
 
 jobs:
   python:
@@ -40,7 +40,7 @@ jobs:
         uses: docker/build-push-action@v4 
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.IMAGE_NAME_FRONT }}:latest 
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.IMAGE_NAME }}:latest 
 
   deploy:
     runs-on: ubuntu-latest
