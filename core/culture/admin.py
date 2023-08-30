@@ -3,8 +3,15 @@ from django.http import FileResponse
 from django.utils.safestring import mark_safe
 from rangefilter.filters import DateRangeQuickSelectListFilterBuilder
 
-from .models import (Exhibit, ExhibitPhoto, FeedBack, Photo, Review, Route,
-                     RouteExhibit)
+from .models import (
+    Exhibit,
+    ExhibitPhoto,
+    FeedBack,
+    Photo,
+    Review,
+    Route,
+    RouteExhibit,
+)
 from .utils import generate_pdf, update_spreadsheet
 
 
@@ -29,11 +36,10 @@ class PhotoInline(admin.TabularInline):
 @admin.register(Route)
 class RouteAdmin(admin.ModelAdmin):
     """Класс, определяющий настройки модели Route
-    в административном интерфейсе."""
-    list_display = (
-        "pk",
-        "name",
-    )
+    в административном интерфейсе.
+    """
+
+    list_display = ("pk", "name")
     search_fields = ["name"]
     list_filter = ["name"]
     empty_value_display = "-пусто-"
@@ -42,11 +48,13 @@ class RouteAdmin(admin.ModelAdmin):
 
     def preview(self, obj):
         return mark_safe(
-            f'<img src="{obj.image.url}" style="max-height: 300px;">')
+            f'<img src="{obj.image.url}" style="max-height: 300px;">'
+        )
 
     def preview_map(self, obj):
         return mark_safe(
-            f'<img src="{obj.route_map.url}" style="max-height: 200px;">')
+            f'<img src="{obj.route_map.url}" style="max-height: 200px;">'
+        )
 
 
 @admin.register(Exhibit)
@@ -54,11 +62,8 @@ class ExhibitAdmin(admin.ModelAdmin):
     """Класс, определяющий настройки модели
     Exhibit в административном интерфейсе.
     """
-    list_display = (
-        "pk",
-        "author",
-        "name",
-    )
+
+    list_display = ("pk", "author", "name")
     search_fields = ["author", "name"]
     list_filter = ["author", "name"]
     empty_value_display = "-пусто-"
@@ -70,11 +75,9 @@ class PhotoAdmin(admin.ModelAdmin):
     """Класс, определяющий настройки модели Photo
     в административном интерфейсе.
     """
+
     readonly_fields = ["img_preview"]
-    list_display = (
-        "pk",
-        "img_preview"
-    )
+    list_display = ("pk", "img_preview")
     empty_value_display = "-пусто-"
 
 
@@ -82,13 +85,18 @@ class PhotoAdmin(admin.ModelAdmin):
 class ReviewAdmin(admin.ModelAdmin):
     """Класс, определяющий настройки модели Review
     в административном интерфейсе.
+
+    Добавлены admin-actions для пользовательских отзывов:
+         export_as_pdf - Скачать выбранные отзывы в формате pdf
+         export_to_spreadsheets - Экспортировать выбранные отзывы
+                                  в Google Spreadsheets
+                                  (требуется указать id созданной
+                                  администратором таблицы в .env,
+                                  а также разрешить к ней доступ
+                                  сервисному аккаунту)
     """
-    list_display = (
-        "pk",
-        "username",
-        "exhibit",
-        "created_at"
-    )
+
+    list_display = ("pk", "username", "exhibit", "created_at")
     search_fields = ["exhibit__name", "username"]
     list_filter = (
         "exhibit",
@@ -115,6 +123,7 @@ class FeedBackAdmin(admin.ModelAdmin):
     """Класс, определяющий настройки модели FeedBack
     в административном интерфейсе.
     """
+
     list_display = (
         "pk",
         "email",

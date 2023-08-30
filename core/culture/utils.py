@@ -48,24 +48,35 @@ def generate_pdf(data):
     elements.append(header)
 
     content = [
-        map(
-            str,
-            [
-                review.username,
-                review.userage,
-                review.userhobby,
-                review.exhibit,
-                review.answer_to_message_before_description,
-                review.answer_to_reflection,
-                review.text,
-            ],
+        list(
+            map(
+                str,
+                [
+                    review.username,
+                    review.userage,
+                    review.userhobby,
+                    review.exhibit,
+                    review.answer_to_message_before_description,
+                    review.answer_to_reflection,
+                    review.text,
+                ],
+            )
         )
         for review in data
     ]
-    table_data = [TABLE_HEADER.copy(), *content]
+
+    table_body = []
+    last = len(content) - 1
+    for i in range(1, last + 1):
+        table_body.append(content[i - 1])
+        if content[i - 1][3] != content[i][3]:
+            table_body.append([])
+    table_body.append(content[last])
+
+    table_data = [TABLE_HEADER.copy(), *table_body]
     table = Table(table_data)
     table.setStyle(
-        TableStyle([("BACKGROUND", (0, 0), (-1, 0), colors.dimgrey)])
+        TableStyle([("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey)])
     )
     elements.append(table)
 
@@ -96,6 +107,7 @@ def update_spreadsheet(reviews):
         ]
         for review in reviews
     ]
+
     data = [TABLE_HEADER.copy(), *content]
 
     sheet.values().clear(
