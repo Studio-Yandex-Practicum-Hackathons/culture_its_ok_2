@@ -15,6 +15,7 @@ class Route(StatesGroup):
     review = State()
     transition = State()
     quiz = State()
+    resend_review = State()
 
 
 class User(StatesGroup):

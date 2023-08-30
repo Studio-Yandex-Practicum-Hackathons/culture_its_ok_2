@@ -346,6 +346,7 @@ async def review(message: Message, state: FSMContext) -> None:
     else:
         await message.answer(text=ms.REVIEW_ERROR.format(answer),
                              reply_markup=keyboard_for_send_review())
+        await state.set_state(Route.resend_review)
 
 
 @route_router.callback_query(F.data == "send_review")
@@ -355,8 +356,9 @@ async def resend_review(
     await callback.answer()
     await callback.message.edit_reply_markup()
     current_state = await state.get_state()
-    if current_state == "Route:review":
+    if current_state:
         await callback.message.answer(ms.WRITE_YOUR_OPINION)
+        await state.set_state(Route.review)
     else:
         await callback.message.answer(ms.BUTTON_NOT_WORK)
 
@@ -368,7 +370,7 @@ async def skip_send_review(
     await callback.answer()
     await callback.message.edit_reply_markup()
     current_state = await state.get_state()
-    if current_state == 'Route:review':
+    if current_state:
         await callback.message.answer(
             'Очень жаль 😕',
             reply_markup=make_row_keyboard(["Идем дальше"]),
@@ -376,6 +378,12 @@ async def skip_send_review(
         await set_route(state, callback.message)
     else:
         await callback.message.answer(ms.BUTTON_NOT_WORK)
+
+
+@route_router.message(Route.resend_review)
+async def any_message(message: Message):
+    """Перехватывает любые сообщения состояния resend_review."""
+    await message.answer(ms.PRESS_THE_BUTTON)
 
 
 @route_router.callback_query(Route.transition, F.data == "in_place")
