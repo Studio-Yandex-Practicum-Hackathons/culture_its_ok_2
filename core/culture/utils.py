@@ -5,6 +5,7 @@ from io import BytesIO
 from django.conf import settings
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from PIL import Image, ImageOps
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
@@ -47,24 +48,35 @@ def generate_pdf(data):
     elements.append(header)
 
     content = [
-        map(
-            str,
-            [
-                review.username,
-                review.userage,
-                review.userhobby,
-                review.exhibit,
-                review.answer_to_message_before_description,
-                review.answer_to_reflection,
-                review.text,
-            ],
+        list(
+            map(
+                str,
+                [
+                    review.username,
+                    review.userage,
+                    review.userhobby,
+                    review.exhibit,
+                    review.answer_to_message_before_description,
+                    review.answer_to_reflection,
+                    review.text,
+                ],
+            )
         )
         for review in data
     ]
-    table_data = [TABLE_HEADER.copy(), *content]
+
+    table_body = []
+    last = len(content) - 1
+    for i in range(1, last + 1):
+        table_body.append(content[i - 1])
+        if content[i - 1][3] != content[i][3]:
+            table_body.append([])
+    table_body.append(content[last])
+
+    table_data = [TABLE_HEADER.copy(), *table_body]
     table = Table(table_data)
     table.setStyle(
-        TableStyle([("BACKGROUND", (0, 0), (-1, 0), colors.dimgrey)])
+        TableStyle([("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey)])
     )
     elements.append(table)
 
@@ -95,6 +107,7 @@ def update_spreadsheet(reviews):
         ]
         for review in reviews
     ]
+
     data = [TABLE_HEADER.copy(), *content]
 
     sheet.values().clear(
@@ -106,3 +119,18 @@ def update_spreadsheet(reviews):
         valueInputOption="USER_ENTERED",
         body={"values": data},
     ).execute()
+
+
+def prepare_image(image, filepath):
+    """Обработка изображения перед сохранением в базу данных"""
+
+    img = Image.open(image)
+    fixed_width = 1080
+    img = Image.open(filepath)
+    img = ImageOps.exif_transpose(img)
+    width_percent = fixed_width / float(img.size[0])
+    height_size = int((float(img.size[1]) * float(width_percent)))
+    new_image = img.resize((fixed_width, height_size))
+    if new_image.format != "JPEG":
+        new_image = new_image.convert("RGB")
+    new_image.save(filepath, "JPEG")

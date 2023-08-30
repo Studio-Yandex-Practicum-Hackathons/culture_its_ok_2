@@ -1,44 +1,102 @@
 from django.contrib import admin
-from django.utils.safestring import mark_safe
 from django.http import FileResponse
-from rangefilter.filters import (
-    DateRangeQuickSelectListFilterBuilder,
-)
+from django.utils.safestring import mark_safe
+from rangefilter.filters import DateRangeQuickSelectListFilterBuilder
 
 from .models import (
-    Exhibit, FeedBack, Review, Route,
-    Photo, RouteExhibit, ExhibitPhoto)
+    Exhibit,
+    ExhibitPhoto,
+    FeedBack,
+    Photo,
+    Review,
+    Route,
+    RouteExhibit,
+)
 from .utils import generate_pdf, update_spreadsheet
 
 
 class ExhibitInline(admin.TabularInline):
+    """Класс, определяющий встраиваемую модель RouteExhibit
+    в административном интерфейсе маршрута.
+    """
+
     model = RouteExhibit
     extra = 1
 
 
 class PhotoInline(admin.TabularInline):
+    """Класс, определяющий встраиваемую модель ExhibitPhoto
+    в административном интерфейсе объекта экспоната.
+    """
+
     model = ExhibitPhoto
     extra = 1
 
 
+@admin.register(Route)
+class RouteAdmin(admin.ModelAdmin):
+    """Класс, определяющий настройки модели Route
+    в административном интерфейсе.
+    """
+
+    list_display = ("pk", "name")
+    search_fields = ["name"]
+    list_filter = ["name"]
+    empty_value_display = "-пусто-"
+    inlines = (ExhibitInline,)
+    readonly_fields = ["preview", "preview_map"]
+
+    def preview(self, obj):
+        return mark_safe(
+            f'<img src="{obj.image.url}" style="max-height: 300px;">'
+        )
+
+    def preview_map(self, obj):
+        return mark_safe(
+            f'<img src="{obj.route_map.url}" style="max-height: 200px;">'
+        )
+
+
+@admin.register(Exhibit)
+class ExhibitAdmin(admin.ModelAdmin):
+    """Класс, определяющий настройки модели
+    Exhibit в административном интерфейсе.
+    """
+
+    list_display = ("pk", "author", "name")
+    search_fields = ["author", "name"]
+    list_filter = ["author", "name"]
+    empty_value_display = "-пусто-"
+    inlines = (PhotoInline,)
+
+
 @admin.register(Photo)
 class PhotoAdmin(admin.ModelAdmin):
+    """Класс, определяющий настройки модели Photo
+    в административном интерфейсе.
+    """
+
     readonly_fields = ["img_preview"]
-    list_display = (
-        "pk",
-        "img_preview"
-    )
+    list_display = ("pk", "img_preview")
     empty_value_display = "-пусто-"
 
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = (
-        "pk",
-        "username",
-        "exhibit",
-        "created_at"
-    )
+    """Класс, определяющий настройки модели Review
+    в административном интерфейсе.
+
+    Добавлены admin-actions для пользовательских отзывов:
+         export_as_pdf - Скачать выбранные отзывы в формате pdf
+         export_to_spreadsheets - Экспортировать выбранные отзывы
+                                  в Google Spreadsheets
+                                  (требуется указать id созданной
+                                  администратором таблицы в .env,
+                                  а также разрешить к ней доступ
+                                  сервисному аккаунту)
+    """
+
+    list_display = ("pk", "username", "exhibit", "created_at")
     search_fields = ["exhibit__name", "username"]
     list_filter = (
         "exhibit",
@@ -60,21 +118,12 @@ class ReviewAdmin(admin.ModelAdmin):
         return update_spreadsheet(queryset.order_by("exhibit"))
 
 
-@admin.register(Exhibit)
-class ExhibitAdmin(admin.ModelAdmin):
-    list_display = (
-        "pk",
-        "author",
-        "name",
-    )
-    search_fields = ["author", "name"]
-    list_filter = ["author", "name"]
-    empty_value_display = "-пусто-"
-    inlines = (PhotoInline,)
-
-
 @admin.register(FeedBack)
 class FeedBackAdmin(admin.ModelAdmin):
+    """Класс, определяющий настройки модели FeedBack
+    в административном интерфейсе.
+    """
+
     list_display = (
         "pk",
         "email",
@@ -83,24 +132,3 @@ class FeedBackAdmin(admin.ModelAdmin):
     search_fields = ["email", "text"]
     list_filter = ["email", "text"]
     empty_value_display = "-пусто-"
-
-
-@admin.register(Route)
-class RouteAdmin(admin.ModelAdmin):
-    list_display = (
-        "pk",
-        "name",
-    )
-    search_fields = ["name"]
-    list_filter = ["name"]
-    empty_value_display = "-пусто-"
-    inlines = (ExhibitInline,)
-    readonly_fields = ["preview", "preview_map"]
-
-    def preview(self, obj):
-        return mark_safe(
-            f'<img src="{obj.image.url}" style="max-height: 300px;">')
-
-    def preview_map(self, obj):
-        return mark_safe(
-            f'<img src="{obj.route_map.url}" style="max-height: 200px;">')

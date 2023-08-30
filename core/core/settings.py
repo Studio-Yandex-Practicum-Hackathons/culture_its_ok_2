@@ -12,7 +12,7 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 
 
 DEBUG = False
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -21,12 +21,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "rest_framework",
     "ckeditor",
-    'rangefilter',
-    'csp',
-
+    "rangefilter",
+    "csp",
     "api.apps.ApiConfig",
     "culture.apps.CultureConfig",
     "bot.apps.BotConfig",
@@ -63,14 +61,13 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 
 DATABASES = {
-
-    'default': {
-        'ENGINE': os.environ['DB_ENGINE'],
-        'NAME': os.environ['DB_NAME'],
-        'USER': os.environ['POSTGRES_USER'],
-        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
-        'HOST': os.environ['DB_HOST'],
-        'PORT': os.environ['DB_PORT'],
+    "default": {
+        "ENGINE": os.environ["DB_ENGINE"],
+        "NAME": os.environ["DB_NAME"],
+        "USER": os.environ["POSTGRES_USER"],
+        "PASSWORD": os.environ["POSTGRES_PASSWORD"],
+        "HOST": os.environ["DB_HOST"],
+        "PORT": os.environ["DB_PORT"],
     }
 }
 
@@ -102,16 +99,19 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://51.250.9.74']
+CSRF_TRUSTED_ORIGINS = ["http://localhost", "http://51.250.9.74"]
 
 CKEDITOR_CONFIGS = {
     "default": {
         "autoParagraph": False,
+        "enterMode": "2",
+        "shiftEnterMode": "2",
         "entities": False,
         "fillEmptyBlocks": False,
-        "toolbar": "Custom",
+        "language": "ru",
         "height": 300,
         "width": 800,
+        "toolbar": "Custom",
         "toolbar_Custom": [
             ["Bold", "Italic", "Underline"],
         ],

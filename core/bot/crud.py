@@ -3,7 +3,7 @@
 from aiogram.fsm.context import FSMContext
 from asgiref.sync import sync_to_async
 
-from culture.models import Exhibit, Review, Route, Photo
+from culture.models import Exhibit, Photo, Review, Route
 
 
 async def get_routes_name() -> list:
@@ -31,8 +31,7 @@ async def get_route_by_name(name: str) -> Route:
 
 
 async def get_exhibit(route_id: str, exhibit_number: int) -> Exhibit:
-    """Получение экспоната по id. Надо немного изменить модели.
-    Надо исправить"""
+    """Получение экспоната по id. Надо немного изменить модели."""
     route = await get_route_by_id(route_id)
     exhibit = (await get_all_exhibits_by_route(route))[exhibit_number]
     return exhibit
