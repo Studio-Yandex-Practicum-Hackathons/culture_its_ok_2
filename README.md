@@ -12,7 +12,7 @@
 * Установите docker и docker-compose
 * Для установки на ubuntu выполните следующие команды:
 ```
-sudo apt install docker.io
+sudo apt install docker
 sudo apt install docker-compose
 ```
 Про установку на других операционных системах вы можете прочитать в [документации](https://docs.docker.com/engine/install/) и [про установку docker-compose](https://docs.docker.com/compose/install/).
@@ -53,7 +53,7 @@ git clone https://github.com/Studio-Yandex-Practicum-Hackathons/culture_its_ok_2
 
 * Установите docker на сервер:
 ```
-sudo apt install docker.io
+sudo apt install docker
 ```
 * Установите docker-compose на сервер:
 ```
